@@ -1,0 +1,43 @@
+#include <R.h>
+#include <Rinternals.h>
+#include <stdlib.h> // for NULL
+#include <R_ext/Rdynload.h>
+
+/*
+  The following symbols/expressions for .NAME have been omitted
+
+    _Lassosum_extension_countlines
+    _Lassosum_extension_multiBed3
+    _Lassosum_extension_multiBed3sp
+    _Lassosum_extension_elnet
+    _Lassosum_extension_repelnet
+    _Lassosum_extension_genotypeMatrix
+    _Lassosum_extension_normalize
+    _Lassosum_extension_GenotypeMatrixMultiplePhenotypes
+    _Lassosum_extension_sd_MultiplePhenotypes
+    _Lassosum_extension_runElnet
+    _Lassosum_extension_rcpparma_hello_world
+    _Lassosum_extension_rcpparma_outerproduct
+    _Lassosum_extension_rcpparma_innerproduct
+    _Lassosum_extension_rcpparma_bothproducts
+
+  Most likely possible values need to be added below.
+*/
+
+/* FIXME: 
+   Check these declarations against the C/Fortran source code.
+*/
+
+/* .Call calls */
+extern SEXP _Lassosum_extension_RcppExport_registerCCallable();
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_Lassosum_extension_RcppExport_registerCCallable", (DL_FUNC) &_Lassosum_extension_RcppExport_registerCCallable, 0},
+    {NULL, NULL, 0}
+};
+
+void R_init_Lassosum_extension(DllInfo *dll)
+{
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
