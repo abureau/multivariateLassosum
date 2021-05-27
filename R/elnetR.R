@@ -1,13 +1,13 @@
 #' @title Elastic net using summary statistics
-#' @description Coordinate descent algorithm to solve: 
+#' @description Coordinate descent algorithm to solve:
 #' 0.5 x'X'Xx - x'b + lambda1 ||x||_1 + 0.5 lambda2 ||x||_2^2
 #' Function to get elastic net solutions given X, a reference panel, and
 #' b, regression coefficients
 #' @keywords internal
 elnetR <- function(lambda1, lambda2=0, X, b, thr=1e-4,
-                     trace=0, maxiter=10000, 
-                   blocks=NULL, 
-                   x=NULL) {
+                     trace=0, maxiter=10000,
+                   blocks=NULL,
+                   x=NULL,sample_size=NULL) {
   stopifnot(length(b) == ncol(X))
   diag <- colSums(X^2)
 
@@ -44,13 +44,13 @@ elnetR <- function(lambda1, lambda2=0, X, b, thr=1e-4,
     Blocks <- parseblocks(blocks)
     stopifnot(max(Blocks$endvec)==len - 1)
   }
-  
+
   X <- as.matrix(X)
   yhat <- as.vector(X %*% x)
 
   for(i in 1:length(lambda1a)) {
     if(trace > 0) cat("lambda1: ", lambda1a[i], "\n")
-    conv[i] <- repelnet(lambda1a[i], lambda2, diag, X, b,thr,x,yhat, trace-1,maxiter,
+    conv[i] <- repelnet(lambda1a[i], lambda2, diag, X, b,thr,x,yhat, trace-1,maxiter,sample_size,
                         Blocks$startvec, Blocks$endvec)
     if(conv[i] != 1) stop("Not converging...")
 

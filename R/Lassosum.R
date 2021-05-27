@@ -6,7 +6,7 @@
 #' where
 #' \deqn{R=(1-s)X'Inv_SigmaX/n + sI}
 #' is a shrunken correlation matrix, with \eqn{X} being standardized reference panel.
-#' \eqn{s} should take values in (0,1]. \eqn{r} is a vector of correlations. 
+#' \eqn{s} should take values in (0,1]. \eqn{r} is a vector of correlations.
 #' \code{keep}, \code{remove} could take one of three
 #' formats: (1) A logical vector indicating which indivduals to keep/remove,
 #' (2) A \code{data.frame} with two columns giving the FID and IID of the indivdiuals
@@ -38,12 +38,11 @@
 #' @param chunks Splitting the genome into chunks for computation. Either an integer
 #' indicating the number of chunks or a vector (length equal to \code{cor}) giving the exact split.
 #' @param cluster A \code{cluster} object from the \code{parallel} package for parallel computing
-#'
+#' @param sample_size
 #' @export
 #' @importFrom matrixcalc is.positive.semi.definite
 #' @importFrom matlib inv
 
-# I haven't modified loss and fbeta yet 
 
 lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
                      lambda=exp(seq(log(0.001), log(0.1), length.out=20)),
@@ -52,8 +51,8 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
                      blocks=NULL,
                      keep=NULL, remove=NULL, extract=NULL, exclude=NULL,
                      chr=NULL,
-                     mem.limit=4*10^9, chunks=NULL, cluster=NULL) {
-  
+                     mem.limit=4*10^9, chunks=NULL, cluster=NULL, sample_size = NULL) {
+
   stopifnot(is.numeric(cor))
   stopifnot(!any(is.na(cor)))
   stopifnot(is.numeric(inv_Sb))
@@ -62,37 +61,37 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   stopifnot(!any(is.na(inv_Ss)))
   if(any(abs(cor) > 1)) warning("Some abs(cor) > 1")
   if(any(abs(cor) == 1)) warning("Some abs(cor) == 1")
-  
-  # On vérifie si cor est bien une matrice
+
+  # On verifie si cor est bien une matrice
   if(!is.matrix(cor)){
     if(is.vector(cor)){
       cor<-matrix(cor,nrow = 1)
       warning("Cor is vector, it has been transformed to a matrix with one row ")
     }
   }
-  
-  #On teste si la matrice Inv_Sb est semi définie positive
+
+  #On teste si la matrice Inv_Sb est semi d?finie positive
   if(!matrixcalc::is.positive.semi.definite(inv_Sb, tol=1e-8)) warning("The inverse of the variance-covariance matrix is not positive semi defined")
-  
+
   #On teste si la matrice Inv_Ss est diagonale
   if(!matrixcalc::is.diagonal.matrix(inv_Ss, tol=1e-8)) warning("The inverse of the residual matrix is not diagonal")
-  
+
   if(length(shrink) > 1) stop("Only 1 shrink parameter at a time.")
-  
+
   parsed <- parseselect(bfile, extract=extract, exclude = exclude,
                         keep=keep, remove=remove,
                         chr=chr)
   if(ncol(cor) != parsed$p) stop("Number of columns of cor does not match number of selected columns in bfile")
   # stopifnot(ncol(cor) == parsed$p)
-  
+
   if(is.null(blocks)) {
     Blocks <- list(startvec=0, endvec=parsed$p - 1)
   } else {
     Blocks <- parseblocks(blocks)
     stopifnot(max(Blocks$endvec)==parsed$p - 1)
   }
-  
-  
+
+
   #### Group blocks into chunks ####
   chunks <- group.blocks(Blocks, parsed, mem.limit, chunks, cluster)
   if(trace > 0) {
@@ -110,12 +109,12 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
         lassosum(cor=cor[,chunks$chunks==i],inv_Sb,inv_Ss,bfile=bfile, lambda=lambda, shrink=shrink,
                  thr=thr, init=init[,chunks$chunks==i], trace=trace-0.5, maxiter=maxiter,
                  blocks[chunks$chunks==i], keep=parsed$keep, extract=chunks$extracts[[i]],
-                 mem.limit=mem.limit, chunks=chunks$chunks[chunks$chunks==i])
+                 mem.limit=mem.limit, chunks=chunks$chunks[chunks$chunks==i],sample_size=sample_size)
       })
     } else {
       Cor <- cor; Inv_Sb <- inv_Sb; Inv_Ss <- inv_Ss ;Bfile <- bfile; Lambda <- lambda; Shrink=shrink; Thr <- thr;
-      Maxiter=maxiter; Mem.limit <- mem.limit ; Trace <- trace; Init <- init; 
-      Blocks <- blocks
+      Maxiter=maxiter; Mem.limit <- mem.limit ; Trace <- trace; Init <- init;
+      Blocks <- blocks; Sample_size <- sample_size
       # Make sure these are defined within the function and so copied to
       # the child processes
       results.list <- parallel::parLapplyLB(cluster, unique(chunks$chunks.blocks), function(i) {
@@ -126,14 +125,14 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
                  trace=trace-0.5, maxiter=Maxiter,
                  blocks=Blocks[chunks$chunks==i],
                  keep=parsed$keep, extract=chunks$extracts[[i]],
-                 mem.limit=Mem.limit, chunks=chunks$chunks[chunks$chunks==i])
+                 mem.limit=Mem.limit, chunks=chunks$chunks[chunks$chunks==i],sample_size=Sample_size)
       })
     }
     return(do.call("merge.lassosum", results.list))
   }
-  
+
   #### Group blocks into chunks
-  
+
   if(is.null(parsed$extract)) {
     extract2 <- list(integer(0), integer(0))
   } else {
@@ -141,7 +140,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
     extract2 <- selectregion(!parsed$extract)
     extract2[[1]] <- extract2[[1]] - 1
   }
-  
+
   if(is.null(parsed$keep)) {
     keepbytes <- integer(0)
     keepoffset <- integer(0)
@@ -150,9 +149,9 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
     keepbytes <- floor(pos/4)
     keepoffset <- pos %% 4 * 2
   }
-  
+
   if(is.null(init)) init <- matrix(rep(0.0, parsed$p),nrow = nrow(cor),ncol = parsed$p) else {
-    # On vérifie si init est bien une matrice
+    # On v?rifie si init est bien une matrice
     if(!is.matrix(init)){
       if(is.vector(init)){
         init<-matrix(init,nrow = 1)
@@ -164,16 +163,16 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   # print(extract2[[1]])
   # print(extract2[[2]])
   # print(4000-sum(extract2[[2]]))
-  
+
   init <- init + 0.0 # force R to create a copy
-  
+
   order <- order(lambda, decreasing = T)
 
   results <- runElnet(lambda[order], shrink, fileName=paste0(bfile,".bed"),
                       cor=cor,inv_Sb=inv_Sb, inv_Ss=inv_Ss,N=parsed$N, P=parsed$P,
                       col_skip_pos=extract2[[1]], col_skip=extract2[[2]],
                       keepbytes=keepbytes, keepoffset=keepoffset,
-                      thr=1e-4, init=init, trace=trace, maxiter=maxiter,
+                      thr=1e-4, init=init, trace=trace, maxiter=maxiter,sample_size = sample_size,
                       startvec=Blocks$startvec, endvec=Blocks$endvec)
   results$sd <- as.vector(results$sd)
   results <- within(results, {
@@ -185,14 +184,14 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
     lambda[order] <- lambda
   })
   results$shrink <- shrink
-  
+
   if(length(lambda) > 0) results$nparams <- as.vector(colSums(results$beta != 0)) else
     results$nparams <- numeric(0)
   results$conv <- as.vector(results$conv)
   results$loss <- as.vector(results$loss)
   results$fbeta <- as.vector(results$fbeta)
   results$lambda <- as.vector(results$lambda)
-  
+
   class(results) <- "lassosum"
   return(results)
   #' @return A list with the following
@@ -205,6 +204,6 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   #' \item{sd}{The standard deviation of the reference panel SNPs}
   #' \item{shrink}{same as input}
   #' \item{nparams}{Number of non-zero coefficients}
-  
-  
+
+
 }
