@@ -1,0 +1,43 @@
+#include <R.h>
+#include <Rinternals.h>
+#include <stdlib.h> // for NULL
+#include <R_ext/Rdynload.h>
+
+/*
+  The following symbols/expressions for .NAME have been omitted
+
+    _functions_countlines
+    _functions_multiBed3
+    _functions_multiBed3sp
+    _functions_elnet
+    _functions_repelnet
+    _functions_genotypeMatrix
+    _functions_normalize
+    _functions_Correlation
+    _functions_GenotypeMatrixMultiplePhenotypes
+    _functions_sd_MultiplePhenotypes
+    _functions_runElnet
+    _functions_rcpparma_outerproduct
+    _functions_rcpparma_innerproduct
+    _functions_rcpparma_bothproducts
+
+  Most likely possible values need to be added below.
+*/
+
+/* FIXME: 
+   Check these declarations against the C/Fortran source code.
+*/
+
+/* .Call calls */
+extern SEXP _functions_RcppExport_registerCCallable();
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_functions_RcppExport_registerCCallable", (DL_FUNC) &_functions_RcppExport_registerCCallable, 0},
+    {NULL, NULL, 0}
+};
+
+void R_init_functions(DllInfo *dll)
+{
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
