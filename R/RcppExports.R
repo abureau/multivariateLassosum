@@ -48,7 +48,7 @@ NULL
 #' @keywords internal
 #'
 countlines <- function(fileName) {
-    .Call(`_Lassosum_ext_countlines`, fileName)
+    .Call(`_LassosumExtension_countlines`, fileName)
 }
 
 #' Multiply genotypeMatrix by a matrix
@@ -65,7 +65,7 @@ countlines <- function(fileName) {
 #' @keywords internal
 #'
 multiBed3 <- function(fileName, N, P, input, col_skip_pos, col_skip, keepbytes, keepoffset, trace) {
-    .Call(`_Lassosum_ext_multiBed3`, fileName, N, P, input, col_skip_pos, col_skip, keepbytes, keepoffset, trace)
+    .Call(`_LassosumExtension_multiBed3`, fileName, N, P, input, col_skip_pos, col_skip, keepbytes, keepoffset, trace)
 }
 
 #' Multiply genotypeMatrix by a matrix (sparse)
@@ -82,7 +82,7 @@ multiBed3 <- function(fileName, N, P, input, col_skip_pos, col_skip, keepbytes, 
 #' @keywords internal
 #'
 multiBed3sp <- function(fileName, N, P, beta, nonzeros, colpos, ncol, col_skip_pos, col_skip, keepbytes, keepoffset, trace) {
-    .Call(`_Lassosum_ext_multiBed3sp`, fileName, N, P, beta, nonzeros, colpos, ncol, col_skip_pos, col_skip, keepbytes, keepoffset, trace)
+    .Call(`_LassosumExtension_multiBed3sp`, fileName, N, P, beta, nonzeros, colpos, ncol, col_skip_pos, col_skip, keepbytes, keepoffset, trace)
 }
 
 #' Performs elnet
@@ -103,11 +103,11 @@ multiBed3sp <- function(fileName, N, P, beta, nonzeros, colpos, ncol, col_skip_p
 #' @keywords internal
 #'
 elnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size) {
-    .Call(`_Lassosum_ext_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size)
+    .Call(`_LassosumExtension_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size)
 }
 
 repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_Lassosum_ext_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
+    .Call(`_LassosumExtension_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
 }
 
 #' imports genotypeMatrix
@@ -123,7 +123,7 @@ repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat,
 #' @keywords internal
 #'
 genotypeMatrix <- function(fileName, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, fillmissing) {
-    .Call(`_Lassosum_ext_genotypeMatrix`, fileName, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, fillmissing)
+    .Call(`_LassosumExtension_genotypeMatrix`, fileName, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, fillmissing)
 }
 
 #' normalize genotype matrix
@@ -133,7 +133,7 @@ genotypeMatrix <- function(fileName, N, P, col_skip_pos, col_skip, keepbytes, ke
 #' @keywords internal
 #'
 normalize <- function(genotypes) {
-    .Call(`_Lassosum_ext_normalize`, genotypes)
+    .Call(`_LassosumExtension_normalize`, genotypes)
 }
 
 #' We build a function that gives us the correlation matrix of SNPs
@@ -145,22 +145,22 @@ normalize <- function(genotypes) {
 #' @keywords internal
 #'
 Correlation <- function(genotypes) {
-    .Call(`_Lassosum_ext_Correlation`, genotypes)
+    .Call(`_LassosumExtension_Correlation`, genotypes)
 }
 
 GenotypeMatrixMultiplePhenotypes <- function(GenotypeMatrix, q) {
-    .Call(`_Lassosum_ext_GenotypeMatrixMultiplePhenotypes`, GenotypeMatrix, q)
+    .Call(`_LassosumExtension_GenotypeMatrixMultiplePhenotypes`, GenotypeMatrix, q)
 }
 
 sd_MultiplePhenotypes <- function(sd, q) {
-    .Call(`_Lassosum_ext_sd_MultiplePhenotypes`, sd, q)
+    .Call(`_LassosumExtension_sd_MultiplePhenotypes`, sd, q)
 }
 
 runElnet <- function(lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_Lassosum_ext_runElnet`, lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec)
+    .Call(`_LassosumExtension_runElnet`, lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec)
 }
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('_Lassosum_ext_RcppExport_registerCCallable', PACKAGE = 'Lassosum.ext')
+    .Call('_LassosumExtension_RcppExport_registerCCallable', PACKAGE = 'LassosumExtension')
 })

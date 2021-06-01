@@ -1,5 +1,5 @@
 
 if ( requireNamespace("tinytest", quietly=TRUE) ){
-  tinytest::test_package("Lassosum.extension")
+  tinytest::test_package("LassosumExtension")
 }
 
