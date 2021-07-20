@@ -333,76 +333,6 @@ RcppExport SEXP _LassosumExtension_Correlation(SEXP genotypesSEXP) {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// GenotypeMatrixMultiplePhenotypes
-arma::mat GenotypeMatrixMultiplePhenotypes(const arma::mat& GenotypeMatrix, int q);
-static SEXP _LassosumExtension_GenotypeMatrixMultiplePhenotypes_try(SEXP GenotypeMatrixSEXP, SEXP qSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type GenotypeMatrix(GenotypeMatrixSEXP);
-    Rcpp::traits::input_parameter< int >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(GenotypeMatrixMultiplePhenotypes(GenotypeMatrix, q));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _LassosumExtension_GenotypeMatrixMultiplePhenotypes(SEXP GenotypeMatrixSEXP, SEXP qSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LassosumExtension_GenotypeMatrixMultiplePhenotypes_try(GenotypeMatrixSEXP, qSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// sd_MultiplePhenotypes
-arma::vec sd_MultiplePhenotypes(const arma::vec& sd, int q);
-static SEXP _LassosumExtension_sd_MultiplePhenotypes_try(SEXP sdSEXP, SEXP qSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type sd(sdSEXP);
-    Rcpp::traits::input_parameter< int >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(sd_MultiplePhenotypes(sd, q));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _LassosumExtension_sd_MultiplePhenotypes(SEXP sdSEXP, SEXP qSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LassosumExtension_sd_MultiplePhenotypes_try(sdSEXP, qSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 // runElnet
 List runElnet(arma::vec& lambda, double shrink, const std::string fileName, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, int N, int P, arma::Col<int>& col_skip_pos, arma::Col<int>& col_skip, arma::Col<int>& keepbytes, arma::Col<int>& keepoffset, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec);
 static SEXP _LassosumExtension_runElnet_try(SEXP lambdaSEXP, SEXP shrinkSEXP, SEXP fileNameSEXP, SEXP corSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP NSEXP, SEXP PSEXP, SEXP col_skip_posSEXP, SEXP col_skipSEXP, SEXP keepbytesSEXP, SEXP keepoffsetSEXP, SEXP thrSEXP, SEXP initSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP, SEXP startvecSEXP, SEXP endvecSEXP) {
@@ -468,8 +398,6 @@ static int _LassosumExtension_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*genotypeMatrix)(const std::string,int,int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::vec(*normalize)(arma::mat&)");
         signatures.insert("arma::mat(*Correlation)(arma::mat&)");
-        signatures.insert("arma::mat(*GenotypeMatrixMultiplePhenotypes)(const arma::mat&,int)");
-        signatures.insert("arma::vec(*sd_MultiplePhenotypes)(const arma::vec&,int)");
         signatures.insert("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
     }
     return signatures.find(sig) != signatures.end();
@@ -485,8 +413,6 @@ RcppExport SEXP _LassosumExtension_RcppExport_registerCCallable() {
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_genotypeMatrix", (DL_FUNC)_LassosumExtension_genotypeMatrix_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_normalize", (DL_FUNC)_LassosumExtension_normalize_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_Correlation", (DL_FUNC)_LassosumExtension_Correlation_try);
-    R_RegisterCCallable("LassosumExtension", "_LassosumExtension_GenotypeMatrixMultiplePhenotypes", (DL_FUNC)_LassosumExtension_GenotypeMatrixMultiplePhenotypes_try);
-    R_RegisterCCallable("LassosumExtension", "_LassosumExtension_sd_MultiplePhenotypes", (DL_FUNC)_LassosumExtension_sd_MultiplePhenotypes_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_runElnet", (DL_FUNC)_LassosumExtension_runElnet_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_RcppExport_validate", (DL_FUNC)_LassosumExtension_RcppExport_validate);
     return R_NilValue;
@@ -501,8 +427,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LassosumExtension_genotypeMatrix", (DL_FUNC) &_LassosumExtension_genotypeMatrix, 8},
     {"_LassosumExtension_normalize", (DL_FUNC) &_LassosumExtension_normalize, 1},
     {"_LassosumExtension_Correlation", (DL_FUNC) &_LassosumExtension_Correlation, 1},
-    {"_LassosumExtension_GenotypeMatrixMultiplePhenotypes", (DL_FUNC) &_LassosumExtension_GenotypeMatrixMultiplePhenotypes, 2},
-    {"_LassosumExtension_sd_MultiplePhenotypes", (DL_FUNC) &_LassosumExtension_sd_MultiplePhenotypes, 2},
     {"_LassosumExtension_runElnet", (DL_FUNC) &_LassosumExtension_runElnet, 19},
     {"_LassosumExtension_RcppExport_registerCCallable", (DL_FUNC) &_LassosumExtension_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
