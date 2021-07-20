@@ -418,21 +418,25 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
   // Also, ensure that the yhat=X*x in the input. Usually, both x and yhat are preset to 0.
   // They are modified in place in this function.
 
-
-  int nq =X.n_rows;
-  int pq =X.n_cols;
+  // we modify this since X is one phenotype genotype matrix now :
+  //int nq =X.n_rows;
+ // int pq =X.n_cols;
+ // int q = inv_Sb.n_cols;
+  //int p = (pq)/(q);
+  
+  int n = X.n_rows;
+  int p = X.n_cols;
   int q = inv_Sb.n_cols;
-  int p = (pq)/(q);
-
+  int pq = p*q;
 
   // avant je comparais r.n_elem avec pq, mais on me donnait warning, donc je compare directement
   // r.n_elem avec X.n_cols, pareil pour les autres
-  if(r.n_elem != X.n_cols) stop("r.n_elem != X.n_cols");
-  if(x.n_elem != X.n_cols) stop("x.n_elem != X.n_cols");
-  if(yhat.n_elem != X.n_rows) stop("yhat.n_elem != X.n_rows");
-  if(diag.n_elem != X.n_cols) stop("diag.n_elem != X.n_cols");
+  if(r.n_elem != X.n_cols*q) stop("r.n_elem != X.n_cols*q");
+  if(x.n_elem != X.n_cols*q) stop("x.n_elem != X.n_cols*q");
+  if(yhat.n_elem != X.n_rows*q) stop("yhat.n_elem != X.n_rows*q");
+  if(diag.n_elem != X.n_cols) stop("diag.n_elem != X.n_cols*q");
 
-  double dlx,del,t1,t2,t3, A,S ;
+  double dlx,del,t1,t2,t3, A,S,C ;
 
   // j : indice des SNPs, k : indice des traits, m: indice des it?rations, u indice pour parcourir le vecteur x ( des betas ),
   // h indice utilis? pour d?finir t1 , l incide utilis? pour d?finir t3
@@ -441,14 +445,12 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
   // On d?finit le vecteur x_before ( qui contient les valeurs des betas ? l'it?ration t-1 )
   arma :: vec x_before(pq,arma::fill::zeros);
 
-  arma::vec Lambda2(pq);
+  // We modify too because one phenotype matrix genotype
+  //arma::vec Lambda2(pq);
+  arma::vec Lambda2(p);
 
   Lambda2.fill(lambda2);
   arma::vec denom=diag + Lambda2;
-
-  // On d?finit le vecteur C , on en aura besoin pour le calcul du terme t3, c'est t(Xj)*Xl*Betal, un vecteur
-  // de taille q
-  arma::vec C(q);
 
   int conv=0;
 
@@ -475,6 +477,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
         t3 = 0.0 ;
         A = 0.0 ;
         S = 0.0 ;
+        C = 0.0 ;
 
         // RMQ : c++ commence ? indicer ? partir de 0 ( le premier ?l?ment d'un vecteur ? l'indice 0),
         // alors que R commence ? indicer ? partir de 1 ( le premier ?l?ment d'un vecteur ? l'indice 1 )
@@ -494,12 +497,17 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
         t2 = sample_size.at(k)*(arma::dot(inv_Ss.row(k),r.subvec(q*j,q*(j+1)-1)))  ;
 
         // On d?finit le terme t3 :
-
+       
+        // Vu qu'on va travailler avec une matrice one genotype, on modifie ceci 
+        // for(l=0; l< p;l++){
+         // C = trans(X.cols(q*j,q*(j+1)-1))*X.cols(q*l,q*(l+1)-1)*x.subvec(q*l,q*(l+1)-1);
+         // if(l!=j) S = S + C.at(k);
+        //}
+        
         for(l=0; l< p;l++){
-          C = trans(X.cols(q*j,q*(j+1)-1))*X.cols(q*l,q*(l+1)-1)*x.subvec(q*l,q*(l+1)-1);
-          if(l!=j) S = S + C.at(k);
+          C = arma::dot(X.col(j), X.col(l))*x.at(q*l+k);
+          if(l!=j) S = S + C;
         }
-
 
         t3 = -1*(inv_Ss.at(k,k))*S;
 
@@ -509,21 +517,29 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 
         if (A < 0){
           if (A + lambda1 <=0 ) {
-            x.at(q*j+k) = (A+ lambda1)/(inv_Ss.at(k,k)*denom.at(q*j+k)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A+ lambda1)/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
         if (A > 0){
           if (A - lambda1>= 0){
-            x.at(q*j+k) = (A- lambda1)/(inv_Ss.at(k,k)*denom.at(q*j+k)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A- lambda1)/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
         if (x.at(q*j+k)==x_before.at(q*j+k) ) continue;
         del = x.at(q*j+k)-x_before.at(q*j+k);
         dlx=std::max(dlx,std::abs(del));
-
-        yhat += del*X.col(q*j+k);
+        
+        // On remplace ceci vu qu'on travaille avec matrice one phenotype X 
+        //yhat += del*X.col(q*j+k);
+        
+        arma::vec SS(X.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+        int d = (q*j+k)%q;
+        for (int b=0;b< X.n_rows;b++){
+          SS.at(q*b+d) = X(b,j)*del;
+          }
+        yhat += SS;
       }
     }
 
@@ -546,17 +562,34 @@ int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma
              arma::Col<int>& startvec, arma::Col<int>& endvec)
 {
   int q = inv_Sb.n_cols;
-
   // Repeatedly call elnet by blocks...
   int nreps=startvec.n_elem;
   int out=1;
   for(int i=0;i < startvec.n_elem; i++) {
     arma::vec xtouse=x.subvec(startvec(i)*q, endvec(i)*q+(q-1));
-    arma::vec yhattouse=X.cols(startvec(i)*q, endvec(i)*q+(q-1)) * xtouse;
-
+    // this was valid when we had multiple phenotype matrix 
+    //arma::vec yhattouse=X.cols(startvec(i)*q, endvec(i)*q+(q-1)) * xtouse;
+    // We do this instead now : 
+    
+    arma::vec yhattouse(X.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+    int k = 0; 
+    for(int j=startvec(i);j<endvec(i)+1;j++){
+      arma::vec S(X.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+      for (int l=0;l< X.n_rows;l++){
+        arma::mat M = arma::mat(q,q);
+        M.fill(X(l,j));
+        M = diagmat(M);
+        S.subvec(l*q,l*q+(q-1)) = M*xtouse.subvec(k*q,k*q+(q-1));
+      }
+      k += 1;
+      yhattouse+= S;
+    }
     int out2=elnet(lambda1, lambda2,
-                   diag.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
-                   X.cols(startvec(i)*q, endvec(i)*q+(q-1)),
+                   diag.subvec(startvec(i), endvec(i)),
+                   // Vu qu'on travaille avec la matrice one genotype, on modifie
+                   // ceci : 
+                   //X.cols(startvec(i)*q, endvec(i)*q+(q-1)),
+                   X.cols(startvec(i), endvec(i)),
                    r.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
                    inv_Sb,inv_Ss,
                    thr, xtouse,
@@ -716,81 +749,6 @@ arma::mat Correlation(arma::mat &genotypes)
 }
 
 
-// We will build a function that could construct the Genotype
-// matrix for multiple phenotypes
-
-//' Constructs a Genotype Matrix for multiples phenotypes from a
-//' genotype matrix for 1 phenotype
-//'
-//' @param GenotypeMatrix genotype matrix for one phenotype
-//' @param q number of phenotypes
-//' @return an armadillo genotype matrix
-//' @keywords internal
-
-// [[Rcpp::export]]
-arma::mat GenotypeMatrixMultiplePhenotypes(const arma::mat& GenotypeMatrix, int q){
-  int p = GenotypeMatrix.n_cols;// number of SNPs
-  int n = GenotypeMatrix.n_rows;// number of subjects
-
-  arma::mat GenotypeMatrixMultiPheno (n*q,q*p);
-  arma::mat GenotypeMatrix_col(n,q*p);
-
-  // Step 1 : we have to duplicate the rows and columns of the matrix
-  // the number of duplicate is the number of phenotypes we have
-
-  // We start by duplicating the columns
-  for(int i=1;i<p+1 ;i ++) {
-    for(int j =(i-1)*q;j<i*q;j++) {
-      GenotypeMatrix_col.col(j) = GenotypeMatrix.col(i-1);
-    }
-  }
-
-  // we now duplicate the rows
-  for(int i=1;i<n+1 ;i ++) {
-    for(int j =(i-1)*q;j<i*q;j++) {
-      GenotypeMatrixMultiPheno.row(j) = GenotypeMatrix_col.row(i-1);
-    }
-  }
-
-  // Step 2 : Some elements should now be set to 0
-
-  for(int i=1;i<n+1 ;i ++) {
-    for(int j=1;j<p+1 ;j ++) {
-      GenotypeMatrixMultiPheno.cols((j-1)*q,j*q-1).rows((i-1)*q,i*q-1) = arma::diagmat(GenotypeMatrixMultiPheno.cols((j-1)*q,j*q-1).rows((i-1)*q,i*q-1));
-    }
-  }
-
-  return GenotypeMatrixMultiPheno;
-}
-
-// We will build a function that could construct the sd vector
-// for multiple traits
-
-//' Constructs an sd vector for multiple phenotypes from a
-//' sd vector for 1 phenotype
-//'
-//' @param sd  vector of sd for one phenotype
-//' @param q number of phenotypes
-//' @return an armadillo sd vector
-//' @keywords internal
-
-// [[Rcpp::export]]
-arma::vec sd_MultiplePhenotypes(const arma::vec& sd, int q){
-  int p = sd.n_elem;// number of SNPs
-
-  arma::vec sd_MultiPheno (q*p,arma::fill::zeros);
-
-  // we duplicate the elements of sd q times
-
-  for(int i=1;i<p+1 ;i ++) {
-    for(int j =(i-1)*q;j<i*q;j++) {
-      sd_MultiPheno.at(j) = sd.at(i-1);
-    }
-  }
-
-  return sd_MultiPheno;
-}
-
 //' Runs elnet with various parameters
 //'
 //' @param lambda1 a vector of lambdas (lambda2 is 0)
@@ -832,20 +790,21 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
 
   int i,j;
 
-  arma::mat genotypes_one_phenotype = genotypeMatrix(fileName, N, P, col_skip_pos, col_skip, keepbytes,
+  arma::mat genotypes = genotypeMatrix(fileName, N, P, col_skip_pos, col_skip, keepbytes,
                                                      keepoffset, 1);
 
   // On commence par normaliser la matrice g?notype pour un seul ph?notype
 
-  arma::vec sd = normalize(genotypes_one_phenotype);
+  arma::vec sd = normalize(genotypes);
   // On construit le vecteur sd pour plusieurs phenotypes
-  arma::vec sd_MultiplePheno = sd_MultiplePhenotypes(sd,inv_Sb.n_cols);
+  // We're not gonna use multiple pheno stuff, so we remove this 
+  //arma::vec sd_MultiplePheno = sd_MultiplePhenotypes(sd,inv_Sb.n_cols);
 
-  genotypes_one_phenotype *= sqrt(1.0 - shrink);
+  genotypes *= sqrt(1.0 - shrink);
 
   // Ensuite on construit la matrice pour plusieurs ph?notypes
 
-  arma::mat genotypes = GenotypeMatrixMultiplePhenotypes(genotypes_one_phenotype,inv_Sb.n_cols);
+  //arma::mat genotypes = GenotypeMatrixMultiplePhenotypes(genotypes_one_phenotype,inv_Sb.n_cols);
 
   // Rcout << "DEF" << std::endl;
 
@@ -865,29 +824,41 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
     q=q+1;
   }
 
-  if (genotypes.n_cols != r.n_elem) {
+  // Since i am working with one genotype matrix, i need to change this 
+  //if (genotypes.n_cols != r.n_elem) {
+   // throw std::runtime_error("Number of positions in reference file is not "
+   //                            "equal the number of regression coefficients");
+  //}
+  // we do this instead : 
+  if (genotypes.n_cols != cor.n_cols) {
     throw std::runtime_error("Number of positions in reference file is not "
                                "equal the number of regression coefficients");
   }
-
 
   arma::Col<int> conv(lambda.n_elem);
   int len = r.n_elem;
 
   arma::mat beta(len, lambda.n_elem);
-  arma::mat pred(genotypes.n_rows, lambda.n_elem); pred.zeros();
+  arma::mat pred(genotypes.n_rows*inv_Sb.n_cols, lambda.n_elem); pred.zeros();
   arma::vec out(lambda.n_elem);
   arma::vec loss(lambda.n_elem);
-  arma::vec diag(r.n_elem); diag.fill(1.0 - shrink);
+  // On definit diag avec le nombre de SNP car on ne travaille pas avec matrice
+  // multiple phenotype
+  //arma::vec diag(r.n_elem); diag.fill(1.0 - shrink);
+  arma::vec diag(genotypes.n_cols); diag.fill(1.0 - shrink);
   // Rcout << "HIJ" << std::endl;
 
   for(j=0; j < diag.n_elem; j++) {
-    if(sd_MultiplePheno(j) == 0.0) diag(j) = 0.0;
+    // We remove sd_multiplePheno
+    //if(sd_MultiplePheno(j) == 0.0) diag(j) = 0.0;
+    
+    //We use sd instead : 
+    if(sd(j) == 0.0) diag(j) = 0.0;
   }
   // Rcout << "LMN" << std::endl;
 
   arma::vec fbeta(lambda.n_elem);
-  arma::vec yhat(genotypes.n_rows);
+  arma::vec yhat(genotypes.n_rows*inv_Sb.n_cols);
   // yhat = genotypes * x;
 
 
@@ -900,7 +871,8 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
                startvec, endvec);
     beta.col(i) = x;
     for(j=0; j < beta.n_rows; j++) {
-      if(sd_MultiplePheno(j) == 0.0) beta(j,i)=beta(j,i) * shrink;
+      int k = j/inv_Sb.n_cols;
+      if(sd(k) == 0.0) beta(j,i)=beta(j,i) * shrink;
     }
 
     if (out(i) != 1) {
@@ -931,5 +903,5 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
                       Named("pred") = pred,
                       Named("loss") = loss,
                       Named("fbeta") = fbeta,
-                      Named("sd_MultiplePheno")= sd_MultiplePheno);
+                      Named("sd")= sd);
 }
