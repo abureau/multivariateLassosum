@@ -796,15 +796,8 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
   // On commence par normaliser la matrice g?notype pour un seul ph?notype
 
   arma::vec sd = normalize(genotypes);
-  // On construit le vecteur sd pour plusieurs phenotypes
-  // We're not gonna use multiple pheno stuff, so we remove this 
-  //arma::vec sd_MultiplePheno = sd_MultiplePhenotypes(sd,inv_Sb.n_cols);
 
   genotypes *= sqrt(1.0 - shrink);
-
-  // Ensuite on construit la matrice pour plusieurs ph?notypes
-
-  //arma::mat genotypes = GenotypeMatrixMultiplePhenotypes(genotypes_one_phenotype,inv_Sb.n_cols);
 
   // Rcout << "DEF" << std::endl;
 
@@ -824,12 +817,6 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
     q=q+1;
   }
 
-  // Since i am working with one genotype matrix, i need to change this 
-  //if (genotypes.n_cols != r.n_elem) {
-   // throw std::runtime_error("Number of positions in reference file is not "
-   //                            "equal the number of regression coefficients");
-  //}
-  // we do this instead : 
   if (genotypes.n_cols != cor.n_cols) {
     throw std::runtime_error("Number of positions in reference file is not "
                                "equal the number of regression coefficients");
@@ -849,17 +836,15 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
   // Rcout << "HIJ" << std::endl;
 
   for(j=0; j < diag.n_elem; j++) {
-    // We remove sd_multiplePheno
-    //if(sd_MultiplePheno(j) == 0.0) diag(j) = 0.0;
-    
-    //We use sd instead : 
     if(sd(j) == 0.0) diag(j) = 0.0;
   }
   // Rcout << "LMN" << std::endl;
 
   arma::vec fbeta(lambda.n_elem);
-  arma::vec yhat(genotypes.n_rows*inv_Sb.n_cols);
-  // yhat = genotypes * x;
+  // On initialise le vecteur yhat avec des 0, sinon on obtient des valeurs incorrects
+  // de y_hat, et donc de pred
+  arma::vec yhat(genotypes.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+  //yhat = genotypes * x;
 
 
   // Rcout << "Starting loop" << std::endl;
@@ -881,20 +866,30 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
 
     pred.col(i) = yhat;
 
-    // We calculate inv_B and inv_Se, we need to calculate Loss and fbeta
-    // This makes the code much slower, we comment these codes lines and get
-    // back to them later
+    // We need to calculate inv_B and inv_Se ( the big matrixes) to calculate
+    // Loss and fbeta
 
-    //arma::mat inv_B = arma::kron(arma::eye(genotypes_one_phenotype.n_cols,genotypes_one_phenotype.n_cols),inv_Sb);
-    //arma::mat inv_Se = arma::kron(arma::eye(genotypes_one_phenotype.n_rows,genotypes_one_phenotype.n_rows),inv_Ss);
+    arma::mat inv_B = arma::kron(arma::eye(genotypes.n_cols,genotypes.n_cols),inv_Sb);
+    arma::mat inv_Se = arma::kron(arma::eye(genotypes.n_rows,genotypes.n_rows),inv_Ss);
 
     // We need the In_Ss matrix in size (pq,pq) for when we calculate the Loss and fbeta
-    //arma::mat inv_Ss_pq = arma::kron(arma::eye(genotypes_one_phenotype.n_cols,genotypes_one_phenotype.n_cols),inv_Ss);
+    arma::mat inv_Ss_pq = arma::kron(arma::eye(genotypes.n_cols,genotypes.n_cols),inv_Ss);
+    
+    // Pour inclure sample size dans la formule et que les dimensions soient corrects, 
+    // il faut construire une matrice Kronecker du vecteur sample size 
+    
+    // on commence par construire une matrice à partir du vecteur 
+    arma::mat sample_size_1 = arma::diagmat(sample_size);
+    // on construit ensuite la matrice de Kronecker 
+    arma::mat sample_size_mat = arma::kron(arma::eye(genotypes.n_cols,genotypes.n_cols),sample_size_1);
 
-    //loss(i) = arma::as_scalar(arma::trans(yhat)*inv_Se*yhat - 2.0*(arma::trans(x))*inv_Ss_pq*r);
+    // Je ne sais pas si le terme beta*B*beta doit être dans Loss on non 
+    // je ne le mets pas pour l'instant 
+    
+    loss(i) = arma::as_scalar(arma::trans(yhat)*inv_Se*yhat - 2.0*(arma::trans(x))*inv_Ss_pq*sample_size_mat*r);
 
-    //fbeta(i) = arma::as_scalar(loss(i) + 2.0 * arma::sum(arma::abs(x)) * lambda(i) +
-     // shrink*(arma::trans(x))*inv_Ss_pq*x + (arma::trans(x))*inv_B*x);
+    fbeta(i) = arma::as_scalar(loss(i) + 2.0 * arma::sum(arma::abs(x)) * lambda(i) +
+      shrink*(arma::trans(x))*inv_Ss_pq*x + (arma::trans(x))*inv_B*x);
   }
 
   return List::create(Named("lambda") = lambda,

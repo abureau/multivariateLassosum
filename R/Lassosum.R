@@ -174,6 +174,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
                       keepbytes=keepbytes, keepoffset=keepoffset,
                       thr=1e-4, init=init, trace=trace, maxiter=maxiter,sample_size = sample_size,
                       startvec=Blocks$startvec, endvec=Blocks$endvec)
+
   results$sd <- as.vector(results$sd)
   results <- within(results, {
     conv[order] <- conv
@@ -191,6 +192,55 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   results$loss <- as.vector(results$loss)
   results$fbeta <- as.vector(results$fbeta)
   results$lambda <- as.vector(results$lambda)
+
+  # Pour éviter les confusions, on va donner des noms à tous les vecteurs pour indiquer
+  # de quel lambda il s'agit. 
+  
+  # On va également construire 2 nouvelles matrice ( beta et pred) ou on va avoir 
+  # une combinaison trait et lambda pour chaque colonne.
+  
+  BETA <- matrix(data = NA,nrow = ncol(cor))
+  for (j in 1:(ncol(results$beta))){
+    BETA_j <- matrix(data = results$beta[,j],nrow = ncol(cor),ncol = nrow(cor),byrow = T)
+    BETA <- cbind(BETA,BETA_j)
+  } 
+  BETA <- BETA[,-1]
+
+  PRED <- matrix(data = NA,nrow = parsed$N)
+  for (j in 1:ncol(results$pred)){
+    PRED_j <- matrix(data = results$pred[,j],nrow = parsed$N,ncol = nrow(cor),byrow = T)
+    PRED <- cbind(PRED,PRED_j)
+  } 
+  PRED <- PRED[,-1]
+
+  # We need to add names to the matrices 
+  nameMat <- c()
+  nameVec <- c()
+  #h indice des lambda 
+  lambda <- results$lambda
+  nbr_trait <- nrow(cor)
+  for (h in 1:length(lambda)){
+    # On construit le vecteur nom pour les matrices 
+    for (k in 1:nbr_trait){
+        name_k <- paste0("Lambda = ", lambda[h], ",trait ",k)
+        nameMat <- c(nameMat,name_k)
+    }
+    # On construit le vecteur nom pour les vecteurs  
+    name_h <- paste0("Lambda = ", lambda[h])
+    nameVec <- c(nameVec,name_h)
+  }
+  
+  colnames(BETA) <- nameMat
+  colnames(PRED) <- nameMat
+  
+  names(results$conv) <- nameVec
+  names(results$loss) <- nameVec
+  names(results$fbeta) <- nameVec
+  
+  results$beta <- BETA 
+  results$pred <- PRED 
+  
+  #print(head(results$beta,10))
 
   class(results) <- "lassosum"
   return(results)
