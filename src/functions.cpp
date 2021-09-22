@@ -837,6 +837,11 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
 
   for(j=0; j < diag.n_elem; j++) {
     if(sd(j) == 0.0) diag(j) = 0.0;
+    
+    // j'ajoute cette condition pour le traitement des SNPs monomorphiques
+    // selon Mak, pour les SNPs monomorphiques, on suppose que Xi ( i etant 
+    // l'indice du SNP i) est un vecteur de rempli de 0. 
+    genotypes.col(j).fill(0); 
   }
   // Rcout << "LMN" << std::endl;
 
@@ -866,30 +871,6 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
 
     pred.col(i) = yhat;
 
-    // We need to calculate inv_B and inv_Se ( the big matrixes) to calculate
-    // Loss and fbeta
-
-    arma::mat inv_B = arma::kron(arma::eye(genotypes.n_cols,genotypes.n_cols),inv_Sb);
-    arma::mat inv_Se = arma::kron(arma::eye(genotypes.n_rows,genotypes.n_rows),inv_Ss);
-
-    // We need the In_Ss matrix in size (pq,pq) for when we calculate the Loss and fbeta
-    arma::mat inv_Ss_pq = arma::kron(arma::eye(genotypes.n_cols,genotypes.n_cols),inv_Ss);
-    
-    // Pour inclure sample size dans la formule et que les dimensions soient corrects, 
-    // il faut construire une matrice Kronecker du vecteur sample size 
-    
-    // on commence par construire une matrice à partir du vecteur 
-    arma::mat sample_size_1 = arma::diagmat(sample_size);
-    // on construit ensuite la matrice de Kronecker 
-    arma::mat sample_size_mat = arma::kron(arma::eye(genotypes.n_cols,genotypes.n_cols),sample_size_1);
-
-    // Je ne sais pas si le terme beta*B*beta doit être dans Loss on non 
-    // je ne le mets pas pour l'instant 
-    
-    loss(i) = arma::as_scalar(arma::trans(yhat)*inv_Se*yhat - 2.0*(arma::trans(x))*inv_Ss_pq*sample_size_mat*r);
-
-    fbeta(i) = arma::as_scalar(loss(i) + 2.0 * arma::sum(arma::abs(x)) * lambda(i) +
-      shrink*(arma::trans(x))*inv_Ss_pq*x + (arma::trans(x))*inv_B*x);
   }
 
   return List::create(Named("lambda") = lambda,

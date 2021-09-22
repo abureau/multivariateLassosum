@@ -193,48 +193,6 @@ namespace LassosumExtension {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat GenotypeMatrixMultiplePhenotypes(const arma::mat& GenotypeMatrix, int q) {
-        typedef SEXP(*Ptr_GenotypeMatrixMultiplePhenotypes)(SEXP,SEXP);
-        static Ptr_GenotypeMatrixMultiplePhenotypes p_GenotypeMatrixMultiplePhenotypes = NULL;
-        if (p_GenotypeMatrixMultiplePhenotypes == NULL) {
-            validateSignature("arma::mat(*GenotypeMatrixMultiplePhenotypes)(const arma::mat&,int)");
-            p_GenotypeMatrixMultiplePhenotypes = (Ptr_GenotypeMatrixMultiplePhenotypes)R_GetCCallable("LassosumExtension", "_LassosumExtension_GenotypeMatrixMultiplePhenotypes");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_GenotypeMatrixMultiplePhenotypes(Shield<SEXP>(Rcpp::wrap(GenotypeMatrix)), Shield<SEXP>(Rcpp::wrap(q)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
-    inline arma::vec sd_MultiplePhenotypes(const arma::vec& sd, int q) {
-        typedef SEXP(*Ptr_sd_MultiplePhenotypes)(SEXP,SEXP);
-        static Ptr_sd_MultiplePhenotypes p_sd_MultiplePhenotypes = NULL;
-        if (p_sd_MultiplePhenotypes == NULL) {
-            validateSignature("arma::vec(*sd_MultiplePhenotypes)(const arma::vec&,int)");
-            p_sd_MultiplePhenotypes = (Ptr_sd_MultiplePhenotypes)R_GetCCallable("LassosumExtension", "_LassosumExtension_sd_MultiplePhenotypes");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_sd_MultiplePhenotypes(Shield<SEXP>(Rcpp::wrap(sd)), Shield<SEXP>(Rcpp::wrap(q)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::vec >(rcpp_result_gen);
-    }
-
     inline List runElnet(arma::vec& lambda, double shrink, const std::string fileName, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, int N, int P, arma::Col<int>& col_skip_pos, arma::Col<int>& col_skip, arma::Col<int>& keepbytes, arma::Col<int>& keepoffset, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec) {
         typedef SEXP(*Ptr_runElnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_runElnet p_runElnet = NULL;
