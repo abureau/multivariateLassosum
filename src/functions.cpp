@@ -836,12 +836,14 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
   // Rcout << "HIJ" << std::endl;
 
   for(j=0; j < diag.n_elem; j++) {
-    if(sd(j) == 0.0) diag(j) = 0.0;
-    
-    // j'ajoute cette condition pour le traitement des SNPs monomorphiques
-    // selon Mak, pour les SNPs monomorphiques, on suppose que Xi ( i etant 
-    // l'indice du SNP i) est un vecteur de rempli de 0. 
-    genotypes.col(j).fill(0); 
+    if(sd(j) == 0.0)
+        {
+       diag(j) = 0.0;
+        // j'ajoute cette condition pour le traitement des SNPs monomorphiques
+        // selon Mak, pour les SNPs monomorphiques, on suppose que Xi ( i etant 
+        // l'indice du SNP i) est un vecteur de rempli de 0. 
+       genotypes.col(j).fill(0);
+       }
   }
   // Rcout << "LMN" << std::endl;
 
