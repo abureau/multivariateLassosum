@@ -84,12 +84,12 @@ multiBed3sp <- function(fileName, N, P, beta, nonzeros, colpos, ncol, col_skip_p
 #' @return conv
 #' @keywords internal
 #'
-elnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size) {
-    .Call(`_LassosumExtension_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size)
+elnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size) {
+    .Call(`_LassosumExtension_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size)
 }
 
-repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_LassosumExtension_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
+repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
+    .Call(`_LassosumExtension_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
 }
 
 #' imports genotypeMatrix
@@ -130,8 +130,8 @@ Correlation <- function(genotypes) {
     .Call(`_LassosumExtension_Correlation`, genotypes)
 }
 
-runElnet <- function(lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_LassosumExtension_runElnet`, lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec)
+runElnet <- function(lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, weights, thr, init, trace, maxiter, sample_size, startvec, endvec) {
+    .Call(`_LassosumExtension_runElnet`, lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, weights, thr, init, trace, maxiter, sample_size, startvec, endvec)
 }
 
 # Register entry points for exported C++ functions
