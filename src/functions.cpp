@@ -409,7 +409,7 @@ arma::mat multiBed3sp(const std::string fileName, int N, int P,
 // [[Rcpp::export]]
 
 int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X,
-          const arma::vec& r, const arma ::mat& inv_Sb,const arma ::mat& inv_Ss ,double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter,
+          const arma::vec& r, const arma ::mat& inv_Sb,const arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter,
           const arma::vec& sample_size)
 {
 
@@ -516,14 +516,14 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
         // On d?finit maintenant la solution Beta
 
         if (A < 0){
-          if (A + lambda1 <=0 ) {
-            x.at(q*j+k) = (A+ lambda1)/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
+          if (A + lambda1*weights(j) <=0 ) {
+            x.at(q*j+k) = (A+ lambda1*weights(j))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
         if (A > 0){
-          if (A - lambda1>= 0){
-            x.at(q*j+k) = (A- lambda1)/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
+          if (A - lambda1*weights(j)>= 0){
+            x.at(q*j+k) = (A- lambda1*weights(j))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
@@ -558,7 +558,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 
 // [[Rcpp::export]]
 int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::mat& inv_Sb, arma ::mat& inv_Ss,
-             double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size,
+             arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size,
              arma::Col<int>& startvec, arma::Col<int>& endvec)
 {
   int q = inv_Sb.n_cols;
@@ -591,7 +591,7 @@ int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma
                    //X.cols(startvec(i)*q, endvec(i)*q+(q-1)),
                    X.cols(startvec(i), endvec(i)),
                    r.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
-                   inv_Sb,inv_Ss,
+                   inv_Sb,inv_Ss,weights,
                    thr, xtouse,
                    yhattouse, trace - 1, maxiter,sample_size);
     x.subvec(startvec(i)*q, endvec(i)*q+(q-1))=xtouse;
@@ -778,7 +778,7 @@ arma::mat Correlation(arma::mat &genotypes)
 List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
               arma::mat& cor, arma ::mat& inv_Sb ,arma ::mat& inv_Ss,int N, int P,
               arma::Col<int>& col_skip_pos, arma::Col<int>& col_skip,
-              arma::Col<int>& keepbytes, arma::Col<int>& keepoffset,
+              arma::Col<int>& keepbytes, arma::Col<int>& keepoffset, arma::vec& weights,
               double thr, arma::mat& init, int trace, int maxiter,const arma::vec& sample_size,
               arma::Col<int>& startvec, arma::Col<int>& endvec) {
   // a) read bed file
@@ -859,7 +859,7 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
     if (trace > 0)
       Rcout << "lambda: " << lambda(i) << "\n" << std::endl;
     out(i) =
-      repelnet(lambda(i), shrink, diag,genotypes, r,inv_Sb,inv_Ss, thr, x, yhat, trace-1, maxiter,sample_size,
+      repelnet(lambda(i), shrink, diag,genotypes, r,inv_Sb,inv_Ss, weights, thr, x, yhat, trace-1, maxiter,sample_size,
                startvec, endvec);
     beta.col(i) = x;
     for(j=0; j < beta.n_rows; j++) {

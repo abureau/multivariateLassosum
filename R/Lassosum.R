@@ -46,7 +46,7 @@
 
 lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
                      lambda=exp(seq(log(0.001), log(0.1), length.out=20)),
-                     shrink=0.9,
+                     shrink=0.9,weights=NULL,
                      thr=1e-4, init=NULL, trace=0, maxiter=10000,
                      blocks=NULL,
                      keep=NULL, remove=NULL, extract=NULL, exclude=NULL,
@@ -70,6 +70,9 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
     }
   }
 
+	# Si les poids sont absents, on les fixe à 1
+	if (is.null(weights)) weights = rep(1,ncol(cor))
+	
   #On teste si la matrice Inv_Sb est semi d?finie positive
   if(!matrixcalc::is.positive.semi.definite(inv_Sb, tol=1e-8)) warning("The inverse of the variance-covariance matrix is not positive semi defined")
 
@@ -107,12 +110,13 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
         # On selectionne les chunks pour tous les traits de la matrice cor
         # On selectionne les chunkcs pour tous les traits de la matrice init
         lassosum(cor=cor[,chunks$chunks==i],inv_Sb,inv_Ss,bfile=bfile, lambda=lambda, shrink=shrink,
-                 thr=thr, init=init[,chunks$chunks==i], trace=trace-0.5, maxiter=maxiter,
+                 weights=weights[chunks$chunks==i],thr=thr, init=init[,chunks$chunks==i], 
+                 trace=trace-0.5, maxiter=maxiter,
                  blocks[chunks$chunks==i], keep=parsed$keep, extract=chunks$extracts[[i]],
                  mem.limit=mem.limit, chunks=chunks$chunks[chunks$chunks==i],sample_size=sample_size)
       })
     } else {
-      Cor <- cor; Inv_Sb <- inv_Sb; Inv_Ss <- inv_Ss ;Bfile <- bfile; Lambda <- lambda; Shrink=shrink; Thr <- thr;
+      Cor <- cor; Inv_Sb <- inv_Sb; Inv_Ss <- inv_Ss ;Bfile <- bfile; Lambda <- lambda; Shrink=shrink; Thr <- thr; Weights=weights
       Maxiter=maxiter; Mem.limit <- mem.limit ; Trace <- trace; Init <- init;
       Blocks <- blocks; Sample_size <- sample_size
       # Make sure these are defined within the function and so copied to
@@ -121,7 +125,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
         # On selectionne les chunks pour tous les traits de la matrice cor
         # On selectionne les chunks pour tous les traits de la matrice init
         lassosum(cor=Cor[,chunks$chunks==i],inv_Sb=Inv_Sb,inv_Ss=Inv_Ss ,bfile=Bfile, lambda=Lambda,
-                 shrink=Shrink, thr=Thr, init=Init[,chunks$chunks==i],
+                 shrink=Shrink, weights=Weights[chunks$chunks==i], thr=Thr, init=Init[,chunks$chunks==i],
                  trace=trace-0.5, maxiter=Maxiter,
                  blocks=Blocks[chunks$chunks==i],
                  keep=parsed$keep, extract=chunks$extracts[[i]],
@@ -171,7 +175,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   results <- runElnet(lambda[order], shrink, fileName=paste0(bfile,".bed"),
                       cor=cor,inv_Sb=inv_Sb, inv_Ss=inv_Ss,N=parsed$N, P=parsed$P,
                       col_skip_pos=extract2[[1]], col_skip=extract2[[2]],
-                      keepbytes=keepbytes, keepoffset=keepoffset,
+                      keepbytes=keepbytes, keepoffset=keepoffset, weights=weights,
                       thr=1e-4, init=init, trace=trace, maxiter=maxiter,sample_size = sample_size,
                       startvec=Blocks$startvec, endvec=Blocks$endvec)
 
