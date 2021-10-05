@@ -136,7 +136,7 @@ RcppExport SEXP _LassosumExtension_multiBed3sp(SEXP fileNameSEXP, SEXP NSEXP, SE
     return rcpp_result_gen;
 }
 // elnet
-int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X, const arma::vec& r, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size);
+int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X, const arma::vec& r, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size);
 static SEXP _LassosumExtension_elnet_try(SEXP lambda1SEXP, SEXP lambda2SEXP, SEXP diagSEXP, SEXP XSEXP, SEXP rSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP weightsSEXP, SEXP thrSEXP, SEXP xSEXP, SEXP yhatSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -147,7 +147,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type r(rSEXP);
     Rcpp::traits::input_parameter< const arma ::mat& >::type inv_Sb(inv_SbSEXP);
     Rcpp::traits::input_parameter< const arma ::mat& >::type inv_Ss(inv_SsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< double >::type thr(thrSEXP);
     Rcpp::traits::input_parameter< arma::vec& >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::vec& >::type yhat(yhatSEXP);
@@ -401,7 +401,7 @@ static int _LassosumExtension_RcppExport_validate(const char* sig) {
         signatures.insert("int(*countlines)(const char*)");
         signatures.insert("arma::mat(*multiBed3)(const std::string,int,int,const arma::mat,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::mat(*multiBed3sp)(const std::string,int,int,const arma::vec,const arma::Col<int>,const arma::Col<int>,const int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
-        signatures.insert("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
+        signatures.insert("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
         signatures.insert("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
         signatures.insert("arma::mat(*genotypeMatrix)(const std::string,int,int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::vec(*normalize)(arma::mat&)");

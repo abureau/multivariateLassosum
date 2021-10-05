@@ -88,11 +88,11 @@ namespace LassosumExtension {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X, const arma::vec& r, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size) {
+    inline int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X, const arma::vec& r, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size) {
         typedef SEXP(*Ptr_elnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_elnet p_elnet = NULL;
         if (p_elnet == NULL) {
-            validateSignature("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
+            validateSignature("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
             p_elnet = (Ptr_elnet)R_GetCCallable("LassosumExtension", "_LassosumExtension_elnet");
         }
         RObject rcpp_result_gen;

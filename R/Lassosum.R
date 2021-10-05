@@ -71,7 +71,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   }
 
 	# Si les poids sont absents, on les fixe à 1
-	if (is.null(weights)) weights = rep(1,ncol(cor))
+	if (is.null(weights)) weights = matrix(1,nrow(cor),ncol(cor))
 	
   #On teste si la matrice Inv_Sb est semi d?finie positive
   if(!matrixcalc::is.positive.semi.definite(inv_Sb, tol=1e-8)) warning("The inverse of the variance-covariance matrix is not positive semi defined")
@@ -110,7 +110,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
         # On selectionne les chunks pour tous les traits de la matrice cor
         # On selectionne les chunkcs pour tous les traits de la matrice init
         lassosum(cor=cor[,chunks$chunks==i],inv_Sb,inv_Ss,bfile=bfile, lambda=lambda, shrink=shrink,
-                 weights=weights[chunks$chunks==i],thr=thr, init=init[,chunks$chunks==i], 
+                 weights=weights[,chunks$chunks==i],thr=thr, init=init[,chunks$chunks==i], 
                  trace=trace-0.5, maxiter=maxiter,
                  blocks[chunks$chunks==i], keep=parsed$keep, extract=chunks$extracts[[i]],
                  mem.limit=mem.limit, chunks=chunks$chunks[chunks$chunks==i],sample_size=sample_size)
@@ -125,7 +125,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
         # On selectionne les chunks pour tous les traits de la matrice cor
         # On selectionne les chunks pour tous les traits de la matrice init
         lassosum(cor=Cor[,chunks$chunks==i],inv_Sb=Inv_Sb,inv_Ss=Inv_Ss ,bfile=Bfile, lambda=Lambda,
-                 shrink=Shrink, weights=Weights[chunks$chunks==i], thr=Thr, init=Init[,chunks$chunks==i],
+                 shrink=Shrink, weights=Weights[,chunks$chunks==i], thr=Thr, init=Init[,chunks$chunks==i],
                  trace=trace-0.5, maxiter=Maxiter,
                  blocks=Blocks[chunks$chunks==i],
                  keep=parsed$keep, extract=chunks$extracts[[i]],

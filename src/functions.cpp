@@ -409,7 +409,7 @@ arma::mat multiBed3sp(const std::string fileName, int N, int P,
 // [[Rcpp::export]]
 
 int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X,
-          const arma::vec& r, const arma ::mat& inv_Sb,const arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter,
+          const arma::vec& r, const arma ::mat& inv_Sb,const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter,
           const arma::vec& sample_size)
 {
 
@@ -516,14 +516,14 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
         // On d?finit maintenant la solution Beta
 
         if (A < 0){
-          if (A + lambda1*weights(j) <=0 ) {
-            x.at(q*j+k) = (A+ lambda1*weights(j))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
+          if (A + lambda1*weights(q*j+k) <=0 ) {
+            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
         if (A > 0){
-          if (A - lambda1*weights(j)>= 0){
-            x.at(q*j+k) = (A- lambda1*weights(j))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
+          if (A - lambda1*weights(q*j+k)>= 0){
+            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
@@ -591,7 +591,7 @@ int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma
                    //X.cols(startvec(i)*q, endvec(i)*q+(q-1)),
                    X.cols(startvec(i), endvec(i)),
                    r.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
-                   inv_Sb,inv_Ss,weights,
+                   inv_Sb,inv_Ss,weights.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
                    thr, xtouse,
                    yhattouse, trace - 1, maxiter,sample_size);
     x.subvec(startvec(i)*q, endvec(i)*q+(q-1))=xtouse;
