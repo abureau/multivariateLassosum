@@ -13,7 +13,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                               sample=NULL,
                               cluster=NULL,
                               max.ref.bfile.n=20000,
-                              nomatch=FALSE,sample_size,
+                              sample_size,
                               ...) {
   #' @title Run lassosum with standard pipeline
   #' @description The easy way to run lassosum
@@ -79,6 +79,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' For \code{keep.ref}, \code{remove.ref}, \code{keep.test}, and \code{remove.test},
   #' see the documentation for \code{keep} and \code{remove} in \code{\link{lassosum}}
   #' for details.
+  #' @importFrom lassosum sd.bfile
   #' @export
   #'
 
@@ -266,11 +267,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   }
   
   ### Read ref.bim and test.bim ###
-  # Ici, on est dans le cas ou nomatch = F, c'est à dire l'utilisateur veut qu'on 
-  # fasse la sélection des SNPs communs entre les summary statistics et le 
-  # jeu de référence et le jeu de test. 
-  if(!nomatch) {
-    
+
     # On va etudier les SNPs communs entre ss.1 et ss.2, et je construit ss.1.2, 
   # ensuite SNPs communs entre ss.1.2 et ss.3, etc. 
   # et quand j'obtient ss.1.2.3.. final, je vais le comparer encore une fois pour 
@@ -295,8 +292,8 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     if (length(cor) > 2){
       ss.1.commun <- ss.1
         for (j in 2:length(cor)){
-      ss.j <- get(paste0("s.",j))
-      m.commun <- matchpos(tomatch = ss.1.commun,ref.df = ss.j, auto.detect.ref = F, 
+            ss.j <- get(paste0("ss.",j))
+            m.commun <- matchpos(tomatch = ss.1.commun,ref.df = ss.j, auto.detect.ref = F, 
                                         ref.chr = "chr", 
                                         ref.pos="pos", ref.alt="A1", ref.ref="A2", 
                                         rm.duplicates = T, exclude.ambiguous = exclude.ambiguous, 
@@ -309,7 +306,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     # En sortie de la boucle précédente, ss.1.commun ne contient que les SNPs communs à tous les 
     # summary statistics pour les ss du jeu 1 
     for ( j in 2:length(cor)){
-      ss.j <- get(paste0("s.",j))
+      ss.j <- get(paste0("ss.",j))
       m.commun <- matchpos(tomatch = ss.1.commun,ref.df = ss.j, auto.detect.ref = F, 
                                         ref.chr = "chr", 
                                         ref.pos="pos", ref.alt="A1", ref.ref="A2", 
@@ -336,21 +333,20 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     ### Compare summary statistics and reference panel ###
     
     if(trace) cat("Coordinating summary stats with reference panel...\n")
-    # m.ref <- matchpos(ss.1.commun, ref.bim, auto.detect.ref = F,
-    #                   ref.chr = "V1", ref.snp="V2",
-    #                   ref.pos="V4", ref.alt="V5", ref.ref="V6",
-    #                   rm.duplicates = T, exclude.ambiguous = exclude.ambiguous,
-    #                   silent=T)
+    print(nrow(ref.bim))
+    print(nrow(ss.1.commun))
+    print(is.data.frame(ss.1.commun))
+    print(is.data.frame(ref.bim))
+    print(head(ref.bim))
+    print(head(ss.1.commun))
     
-    # I'm gonna try this instead : 
-    
-    m.ref <- matchpos(ss.2.commun, ref.bim, auto.detect.ref = F,
+    #browser()
+    m.ref <- matchpos(ss.1.commun, ref.bim, auto.detect.ref = F,
                       ref.chr = "V1", ref.snp="V2",
                       ref.pos="V4", ref.alt="V5", ref.ref="V6",
                       rm.duplicates = T, exclude.ambiguous = exclude.ambiguous,
                       silent=T)
-    
-    
+    print("smt")
     for (j in 1:length(cor)){
       ss.j.commun <- get(paste0("ss.",j,".commun"))
       ss2.j.commun <- ss.j.commun[m.ref$order,]
@@ -360,22 +356,25 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
       assign(x = paste0("ss2.",j,".commun"),value = ss2.j.commun )
     }
     
-    print(nrow(ss.2.commun))
-    print(length(m.ref$order)) 
-    print(nrow(ss2.2.commun))
-    
-    
     ### Compare summary statistics and test data ###
     if(!onefile) {
       if(trace) cat("Coordinating summary stats with test data...\n")
-      m.test <- matchpos(ss.1.commun, test.bim, auto.detect.ref = F,
+        print(nrow(test.bim))
+        print(nrow(ss.1.commun))
+        print(head(test.bim))
+        print(head(ss.1.commun))
+        
+        m.test <- matchpos(ss.1.commun, test.bim, auto.detect.ref = F,
                          ref.chr = "V1", ref.snp="V2",
                          ref.pos="V4", ref.alt="V5", ref.ref="V6",
                          rm.duplicates = T, exclude.ambiguous = exclude.ambiguous,
                          silent=T)
+        
+        print(length(m.test$order)) 
+        
       ### Find SNPs that are common to all three datasets ###
       if(trace) cat("Coordinating summary stats, reference panel, and test data...\n")
-      m.common <- matchpos(ss2.1.commun, test.bim, auto.detect.ref = F,
+        m.common <- matchpos(ss2.1.commun, test.bim, auto.detect.ref = F,
                            ref.chr = "V1", ref.snp="V2",
                            ref.pos="V4", ref.alt="V5", ref.ref="V6",
                            rm.duplicates = T,
@@ -400,37 +399,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     ### Positions of reference dataset that are common to summary statistics and test dataset ###
     ref.extract <- rep(FALSE, nrow(ref.bim))
     ref.extract[m.ref$ref.extract][m.common$order] <- TRUE
-    
-    ### Positions of test dataset that are common to summary statistics and reference dataset ###
-    # ( I added this, because i work with only SNPs common to summary stat, ref and test data)
-    # I havent adapted the part : ### Impute indeplasso estimates to SNPs not in reference panel ###
-    # in the code of Lassosum.pipeline
-
-    test.extract <- rep(FALSE, nrow(test.bim))
-    test.extract[m.common$ref.extract]<- TRUE
-    
-  } # Je ne sais pas comment adapter cette partie parce que je n'ai pas bien compris 
-    # A quoi elle sert
-  # Je vais donc la commenter 
-  # else {   # For use in cp.lassosum only!!!
-  #   # Je ne sais pas comment adapter cette partie parce que je n'ai pas bien compris 
-  #   # A quoi elle sert
-  #   ss2 <- ss
-  #   stopifnot(parsed.ref$p == nrow(ss))
-  #   stopifnot(parsed.test$p == nrow(ss))
-  #   m.ref <- list(order=1:parsed.ref$p, ref.extract=rep(TRUE, parsed.ref$p),
-  #     rev=rep(1, parsed.ref$p))
-  #   m.common <- m.test <- m.ref
-  #   ## Why do we do this ?? 
-  #   # C'est comme si on remplace le référence panel par les summary statistics ?! 
-  #   ref.bim <- list(V1=ss$chr, V2=ss$snp, V4=ss$pos, V5=ss$A1, V6=ss$A2)
-  #   # Note that some of these could be NULL...
-  #   test.bim <- ref.bim
-  #   ref.extract <- m.ref$ref.extract
-  # }
 
   
-  # On construit les matrice Inv_Ss et Inv_Sb 
+  # On construit les matrice Inv_Ss et Inv_Sb pour les SNPs commun aux 
+  # 3 jeux ( summary statistics, panel de ref et jeu de test)
   
   nbr_SNPs <- sum(ref.extract)
   Sigma_b <- phenotypic.genetic.Var.Cov.matrix/nbr_SNPs
@@ -458,16 +430,14 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   }
 
   ### Number of different s values to try ###
-  
-  # I will comment the following ligne for now, vu que je ne distingue pas entre 
-  # s =1 et s différent de 1 pour l'instant 
-  #s.minus.1 <- s[s != 1]
-  s.minus.1 <- s
+  s.minus.1 <- s[s != 1]
   
   ### Get beta estimates from lassosum ###
   
-  # I have to add code here to adapt corr for all summary statistics 
-  cor2 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss2.1.commun))
+  # I have to add code here to adapt corelation matrix for all summary statistics 
+  print(length(m.common$order))
+  print(nrow(ss2.1.commun))
+  cor2 <- matrix(data = NA,nrow = length(cor),ncol = length(m.common$order))
   k <- 1
   for (j in 1:length(cor)){
     ss2.j.commun <- get(paste0("ss2.",j,".commun"))
@@ -485,131 +455,123 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                    blocks = LDblocks, trace=trace-1,
                    keep=parsed.ref$keep, cluster=cluster,sample_size = sample_size, ...)
     })
+    # We get the name of the columns of Beta in ls because we will need it later
+    name <- colnames(ls[[1]][[2]])
   }
 
-  # I will ignore the following, i will only work for now with SNPs commun to 
-  # all data sets because I dont know how to do this : 
-  # I have to comment the following : 
-  ### Indeplasso ###
-  # ss3 <- ss[m.test$order,]
-  # ss3$cor <- ss3$cor * m.test$rev
-  # ss3$A1 <- test.bim$V5[m.test$ref.extract]
-  # ss3$A2 <- test.bim$V6[m.test$ref.extract]
-  # ss3$order <- m.test$order
-  # 
-  # if(any(s == 1)) {
-  #   if(trace) cat("Running lassosum with s=1...\n")
-  #   il <- indeplasso(ss3$cor, lambda=lambda)
-  # } else {
-  #   il <- list(beta=matrix(0, nrow=length(m.test$order), ncol=length(lambda)))
-  # }
+  # I have to add code here to adapt corr3 for SNPs commun to all summary 
+  # statistics and test data set only
+  
+  for (j in 1:length(cor)){
+    ss.j.commun <- get(paste0("ss.",j,".commun"))
+    ss3.j.commun <- ss.j.commun[m.test$order,]
+    ss3.j.commun$cor <- ss3.j.commun$cor * m.test$rev
+    ss3.j.commun$A1 <- test.bim$V5[m.test$ref.extract]
+    ss3.j.commun$A2 <- test.bim$V6[m.test$ref.extract]
+    ss3.j.commun$order <- m.test$order
+    assign(x = paste0("ss3.",j,".commun"),value = ss3.j.commun )
+  }
+  cor3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
+  k <- 1
+  for (j in 1:length(cor)){
+    assign(x = paste0("cor3.",j),value = ss3.j.commun$cor )
+    cor3[k,] <- get(paste0("cor3.",j))
+    k <- k+1 
+  }
+  print(nrow(ss3.1.commun))
+  print(length(m.test$order))
+  
+   if(any(s == 1)) {
+       
+        # On construit la matrice Inv_Sb pour les SNPs commun aux 
+        # 2 jeux ( summary statistics et jeu de test)
+       # Je reconstruis la matrice sigma_b car le nombre de snps 
+       # est différent ici ( on travaille avec les snps communs
+       # au summary statistics et le jeu de test seulement)
+  
+     nbr_SNPs <- nrow(ss3.1.commun)
+     Sigma_b <- phenotypic.genetic.Var.Cov.matrix/nbr_SNPs
+     inv_Sb <- matlib::inv(Sigma_b)
+     
+     if(trace) cat("Running lassosum with s=1...\n")
+     # J'ai adapté la fonction indeplasso au cas multivariate
+       il <- indeplasso(cor = cor3,inv_Sb,inv_Ss,lambda,sample_size)
+   } else {
+       il <- list(beta=matrix(0, nrow=length(m.test$order), ncol=length(cor)*length(lambda)))
+   }
 
   ### Impute indeplasso estimates to SNPs not in reference panel ###
-  # if(trace && any(m.test$ref.extract & !m.common$ref.extract))
-  #   cat("Impute indeplasso estimates to SNPs not in reference panel ...\n")
-  # beta <- rep(list(il$beta), length(s))
-  # names(beta) <- as.character(s)
-  # in.refpanel <- m.common$ref.extract[m.test$ref.extract]
-  # re.order <- order(m.common$order)
-  # if(length(s.minus.1) > 0) {
-  #   for(i in 1:length(s.minus.1)) {
-  #     beta[[i]][in.refpanel, ] <-
-  #       as.matrix(Matrix::Diagonal(x=m.common$rev) %*%
-  #                   ls[[i]]$beta[re.order, ])
-  #   }
-  # }
+   if(trace && any(m.test$ref.extract & !m.common$ref.extract))
+     cat("Impute indeplasso estimates to SNPs not in reference panel ...\n")
+   beta <- rep(list(il$beta), length(s))
+   names(beta) <- as.character(s)
+   # We set the names of the columns of beta 
+   for (i in 1:length(beta)){
+      colnames(beta[[i]])<- name
+  }
+   in.refpanel <- m.common$ref.extract[m.test$ref.extract]
+   re.order <- order(m.common$order)
+   if(length(s.minus.1) > 0) {
+     for(i in 1:length(s.minus.1)) {
+       beta[[i]][in.refpanel, ] <-
+         as.matrix(Matrix::Diagonal(x=m.common$rev) %*%
+                     ls[[i]]$beta[re.order, ])
+     }
+   }
 
   ### De-standardizing correlation coefficients to get regression coefficients ###
   
-  # I add this here because I need it in what follows and i have commented it before 
-  # because it was in the indeplasso part 
-  # je vais remplacer, dans ce qui suit : m.test$ref.extract par test.extract
-  # not sure si j'ai bien défini ceci 
-  
-  in.refpanel <- m.common$ref.extract[test.extract]
-  #re.order <- order(m.common$order)
-  beta <- rep(list(0),length(s))
-  names(beta) <- as.character(s)
-  for(i in 1:length(s.minus.1)) {
-      beta[[i]] <- ls[[i]]$beta
-    }
-  #beta <- rep(list(ls$beta), length(s))
-  #names(beta) <- as.character(s)
-  # in.refpanel <- m.common$ref.extract[m.test$ref.extract]
-  # re.order <- order(m.common$order)
-  # if(length(s.minus.1) > 0) {
-  #   for(i in 1:length(s.minus.1)) {
-  #     beta[[i]][in.refpanel, ] <-
-  #       as.matrix(Matrix::Diagonal(x=m.common$rev) %*%
-  #                   ls[[i]]$beta[re.order, ])
-  #   }
-  # }
-  
-  # I also add this because i commented the part where i capture beta from ls$beta
-  # print(ls$beta)
-  # beta <- ls$beta
-  
-  sd <- NULL
+   sd <- NULL
+   # Rmq : j'utilise sd.bfile de lassosum et non lassosumMultivariate 
+   # car pour calculer sd.bfile, il faut appeler la fonction lassosum 
   if(destandardize) {
     ### May need to obtain sd ###
     if(trace) cat("Obtain standard deviations ...\n")
-    # Je vais modifier le calcul de sd comme suit : 
-    # le code précédent calculer sd pour le jeu de test en selectionnant les SNPs 
-    # communs aux summary statistics avec le jeu de test ( sans prendre en considération
-    # le jeu de référence) car il font indeplasso. 
-    # Vu que je ne le fais pas, il faut que je sélectionne que les SNPs communs
-    # a tous les jeux de données. 
-    # et donc je vais remplacer, dans ce qui suit : m.test$ref.extract par test.extract
+    sd <- rep(NA, sum(m.test$ref.extract))
+    if(length(s.minus.1) > 0 && ref.equal.test) {
+      # Don't want to re-compute if they're already computed in lassosum. 
+      sd[in.refpanel] <- ls[[1]]$sd[re.order]
+      xcl.test <- !in.refpanel
+      stopifnot(all(is.na(sd[xcl.test])))
+    } else {
+      xcl.test <- in.refpanel & FALSE
+    }
     
-    sd <- sd.bfile(bfile = test.bfile, extract=test.extract,
+    if(ref.equal.test) {
+      if(any(xcl.test)) { # xcl.test => exclusive to test.bfile
+        toextract <- m.test$ref.extract
+        toextract[toextract] <- xcl.test
+        sd[xcl.test] <- lassosum:::sd.bfile(bfile = test.bfile, extract=toextract, 
+                                 keep=parsed.test$keep, cluster=cluster, ...)
+      } else if(length(s.minus.1) == 0) {
+        # sd not calculated because no s < 1 was used. 
+        sd <- lassosum:::sd.bfile(bfile = test.bfile, extract=m.test$ref.extract,  
                                keep=parsed.test$keep, cluster=cluster, ...)
-    
-    # Pour éviter les erreurs, je n'utilise pas ce qui suit parce que c'est confondant 
-    # sd <- rep(NA, sum(test.extract))
-    # if(length(s.minus.1) > 0 && ref.equal.test) {
-    #   # Don't want to re-compute if they're already computed in lassosum.
-    #   sd[in.refpanel] <- ls[[1]]$sd[re.order]
-    #   xcl.test <- !in.refpanel
-    #   stopifnot(all(is.na(sd[xcl.test])))
-    # } else {
-    #   xcl.test <- in.refpanel & FALSE
-    # }
-    # 
-    # if(ref.equal.test) {
-    #   if(any(xcl.test)) { # xcl.test => exclusive to test.bfile
-    #     toextract <- test.extract
-    #     toextract[toextract] <- xcl.test
-    #     sd[xcl.test] <- sd.bfile(bfile = test.bfile, extract=toextract,
-    #                              keep=parsed.test$keep, cluster=cluster, ...)
-    #   } else if(length(s.minus.1) == 0) {
-    #     # sd not calculated because no s < 1 was used.
-    #     sd <- sd.bfile(bfile = test.bfile, extract=test.extract,
-    #                            keep=parsed.test$keep, cluster=cluster, ...)
-    #   } else {
-    #     # sd should already be calculated at lassosum
-    #   }
-    # } else {
-    #   sd <- sd.bfile(bfile = test.bfile, extract = test.extract,
-    #                  keep=parsed.test$keep, ...)
-    # }
+      } else {
+        # sd should already be calculated at lassosum
+      }
+    } else {
+      sd <- lassosum:::sd.bfile(bfile = test.bfile, extract=m.test$ref.extract,  
+                     keep=parsed.test$keep, ...)
+    }
 
     if(trace) cat("De-standardize lassosum coefficients ...\n")
     ### regression coefficients = correlation coefficients / sd(X) * sd(y) ###
     sd[sd <= 0] <- Inf # Do not want infinite beta's!
     beta <- lapply(beta, function(x) as.matrix(Matrix::Diagonal(x=1/sd) %*% x))
   }
-  # On va regrouper tous les summary statistics (qui contiennent les SNPs communs aux 
-  # 3 data sets) pour tous les traits. 
+  # On va regrouper tous les summary statistics (qui contiennent les SNPs communs 
+   # au jeu de test et summary statistics, pour tous les traits. 
   sumstats <- list()
   for (j in 1:length(cor)){
-    sumstats[[j]] <- get(paste0("ss2.",j,".commun"))
+    sumstats[[j]] <- get(paste0("ss3.",j,".commun"))
     names(sumstats)[[j]] <- paste0("ss du trait ",j)
   }
   
 
   ### Getting some results ###
   # I modified the test.extract argument 
-  results <- list(beta=beta, test.extract=test.extract,
+  results <- list(beta=beta, test.extract=m.test$ref.extract,
                   also.in.refpanel=m.common$ref.extract,
                   # I modified sumstats argument
                   sumstats=sumstats, sd=sd,
@@ -641,13 +603,17 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     class(results) <- "lassosum.pipeline"
     return(results)
   }
-  # je vais remplacer, dans ce qui suit : m.test$ref.extract par test.extract
+
   ### Polygenic scores
   if(trace) cat("Calculating polygenic scores ...\n")
   pgs <- lapply(beta, function(x) pgs(bfile=test.bfile, weights = x,
-           extract=test.extract, keep=parsed.test$keep,
+           extract=m.test$ref.extract, keep=parsed.test$keep,
            cluster=cluster))
   names(pgs) <- as.character(s)
+  # We name the columns of each element of the list 
+  for (i in 1:length(pgs)){
+      colnames(pgs[[i]])<- name
+  }
   results <- c(results, list(pgs=pgs))
   results$time <- (proc.time() - time.start)["elapsed"]
   class(results) <- "lassosum.pipeline"

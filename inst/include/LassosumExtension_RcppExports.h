@@ -109,6 +109,27 @@ namespace LassosumExtension {
         return Rcpp::as<int >(rcpp_result_gen);
     }
 
+    inline int elnet_s1(double lambda1, const arma::vec& r, int p, int q, int pq, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, double thr, arma::vec& x, int trace, int maxiter, const arma::vec& sample_size) {
+        typedef SEXP(*Ptr_elnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_elnet_s1 p_elnet_s1 = NULL;
+        if (p_elnet_s1 == NULL) {
+            validateSignature("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::mat&,const arma ::mat&,double,arma::vec&,int,int,const arma::vec&)");
+            p_elnet_s1 = (Ptr_elnet_s1)R_GetCCallable("LassosumExtension", "_LassosumExtension_elnet_s1");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_elnet_s1(Shield<SEXP>(Rcpp::wrap(lambda1)), Shield<SEXP>(Rcpp::wrap(r)), Shield<SEXP>(Rcpp::wrap(p)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(pq)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<int >(rcpp_result_gen);
+    }
+
     inline int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::mat& inv_Sb, arma ::mat& inv_Ss, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec) {
         typedef SEXP(*Ptr_repelnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_repelnet p_repelnet = NULL;
@@ -204,6 +225,27 @@ namespace LassosumExtension {
         {
             RNGScope RCPP_rngScope_gen;
             rcpp_result_gen = p_runElnet(Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(shrink)), Shield<SEXP>(Rcpp::wrap(fileName)), Shield<SEXP>(Rcpp::wrap(cor)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(N)), Shield<SEXP>(Rcpp::wrap(P)), Shield<SEXP>(Rcpp::wrap(col_skip_pos)), Shield<SEXP>(Rcpp::wrap(col_skip)), Shield<SEXP>(Rcpp::wrap(keepbytes)), Shield<SEXP>(Rcpp::wrap(keepoffset)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)), Shield<SEXP>(Rcpp::wrap(startvec)), Shield<SEXP>(Rcpp::wrap(endvec)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<List >(rcpp_result_gen);
+    }
+
+    inline List runElnet_s1(arma::vec& lambda, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size) {
+        typedef SEXP(*Ptr_runElnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_runElnet_s1 p_runElnet_s1 = NULL;
+        if (p_runElnet_s1 == NULL) {
+            validateSignature("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::mat&,arma ::mat&,double,arma::mat&,int,int,const arma::vec&)");
+            p_runElnet_s1 = (Ptr_runElnet_s1)R_GetCCallable("LassosumExtension", "_LassosumExtension_runElnet_s1");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_runElnet_s1(Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(cor)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

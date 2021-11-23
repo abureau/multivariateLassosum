@@ -176,6 +176,51 @@ RcppExport SEXP _LassosumExtension_elnet(SEXP lambda1SEXP, SEXP lambda2SEXP, SEX
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// elnet_s1
+int elnet_s1(double lambda1, const arma::vec& r, int p, int q, int pq, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, double thr, arma::vec& x, int trace, int maxiter, const arma::vec& sample_size);
+static SEXP _LassosumExtension_elnet_s1_try(SEXP lambda1SEXP, SEXP rSEXP, SEXP pSEXP, SEXP qSEXP, SEXP pqSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP thrSEXP, SEXP xSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type lambda1(lambda1SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type q(qSEXP);
+    Rcpp::traits::input_parameter< int >::type pq(pqSEXP);
+    Rcpp::traits::input_parameter< const arma ::mat& >::type inv_Sb(inv_SbSEXP);
+    Rcpp::traits::input_parameter< const arma ::mat& >::type inv_Ss(inv_SsSEXP);
+    Rcpp::traits::input_parameter< double >::type thr(thrSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type trace(traceSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sample_size(sample_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(elnet_s1(lambda1, r, p, q, pq, inv_Sb, inv_Ss, thr, x, trace, maxiter, sample_size));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _LassosumExtension_elnet_s1(SEXP lambda1SEXP, SEXP rSEXP, SEXP pSEXP, SEXP qSEXP, SEXP pqSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP thrSEXP, SEXP xSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_LassosumExtension_elnet_s1_try(lambda1SEXP, rSEXP, pSEXP, qSEXP, pqSEXP, inv_SbSEXP, inv_SsSEXP, thrSEXP, xSEXP, traceSEXP, maxiterSEXP, sample_sizeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // repelnet
 int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::mat& inv_Sb, arma ::mat& inv_Ss, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec);
 static SEXP _LassosumExtension_repelnet_try(SEXP lambda1SEXP, SEXP lambda2SEXP, SEXP diagSEXP, SEXP XSEXP, SEXP rSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP thrSEXP, SEXP xSEXP, SEXP yhatSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP, SEXP startvecSEXP, SEXP endvecSEXP) {
@@ -385,6 +430,48 @@ RcppExport SEXP _LassosumExtension_runElnet(SEXP lambdaSEXP, SEXP shrinkSEXP, SE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// runElnet_s1
+List runElnet_s1(arma::vec& lambda, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size);
+static SEXP _LassosumExtension_runElnet_s1_try(SEXP lambdaSEXP, SEXP corSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP thrSEXP, SEXP initSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type cor(corSEXP);
+    Rcpp::traits::input_parameter< arma ::mat& >::type inv_Sb(inv_SbSEXP);
+    Rcpp::traits::input_parameter< arma ::mat& >::type inv_Ss(inv_SsSEXP);
+    Rcpp::traits::input_parameter< double >::type thr(thrSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type init(initSEXP);
+    Rcpp::traits::input_parameter< int >::type trace(traceSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sample_size(sample_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(runElnet_s1(lambda, cor, inv_Sb, inv_Ss, thr, init, trace, maxiter, sample_size));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _LassosumExtension_runElnet_s1(SEXP lambdaSEXP, SEXP corSEXP, SEXP inv_SbSEXP, SEXP inv_SsSEXP, SEXP thrSEXP, SEXP initSEXP, SEXP traceSEXP, SEXP maxiterSEXP, SEXP sample_sizeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_LassosumExtension_runElnet_s1_try(lambdaSEXP, corSEXP, inv_SbSEXP, inv_SsSEXP, thrSEXP, initSEXP, traceSEXP, maxiterSEXP, sample_sizeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _LassosumExtension_RcppExport_validate(const char* sig) { 
@@ -394,11 +481,13 @@ static int _LassosumExtension_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*multiBed3)(const std::string,int,int,const arma::mat,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::mat(*multiBed3sp)(const std::string,int,int,const arma::vec,const arma::Col<int>,const arma::Col<int>,const int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
+        signatures.insert("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::mat&,const arma ::mat&,double,arma::vec&,int,int,const arma::vec&)");
         signatures.insert("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
         signatures.insert("arma::mat(*genotypeMatrix)(const std::string,int,int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::vec(*normalize)(arma::mat&)");
         signatures.insert("arma::mat(*Correlation)(arma::mat&)");
         signatures.insert("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
+        signatures.insert("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::mat&,arma ::mat&,double,arma::mat&,int,int,const arma::vec&)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -409,11 +498,13 @@ RcppExport SEXP _LassosumExtension_RcppExport_registerCCallable() {
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_multiBed3", (DL_FUNC)_LassosumExtension_multiBed3_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_multiBed3sp", (DL_FUNC)_LassosumExtension_multiBed3sp_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_elnet", (DL_FUNC)_LassosumExtension_elnet_try);
+    R_RegisterCCallable("LassosumExtension", "_LassosumExtension_elnet_s1", (DL_FUNC)_LassosumExtension_elnet_s1_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_repelnet", (DL_FUNC)_LassosumExtension_repelnet_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_genotypeMatrix", (DL_FUNC)_LassosumExtension_genotypeMatrix_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_normalize", (DL_FUNC)_LassosumExtension_normalize_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_Correlation", (DL_FUNC)_LassosumExtension_Correlation_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_runElnet", (DL_FUNC)_LassosumExtension_runElnet_try);
+    R_RegisterCCallable("LassosumExtension", "_LassosumExtension_runElnet_s1", (DL_FUNC)_LassosumExtension_runElnet_s1_try);
     R_RegisterCCallable("LassosumExtension", "_LassosumExtension_RcppExport_validate", (DL_FUNC)_LassosumExtension_RcppExport_validate);
     return R_NilValue;
 }
@@ -423,11 +514,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LassosumExtension_multiBed3", (DL_FUNC) &_LassosumExtension_multiBed3, 9},
     {"_LassosumExtension_multiBed3sp", (DL_FUNC) &_LassosumExtension_multiBed3sp, 12},
     {"_LassosumExtension_elnet", (DL_FUNC) &_LassosumExtension_elnet, 13},
+    {"_LassosumExtension_elnet_s1", (DL_FUNC) &_LassosumExtension_elnet_s1, 12},
     {"_LassosumExtension_repelnet", (DL_FUNC) &_LassosumExtension_repelnet, 15},
     {"_LassosumExtension_genotypeMatrix", (DL_FUNC) &_LassosumExtension_genotypeMatrix, 8},
     {"_LassosumExtension_normalize", (DL_FUNC) &_LassosumExtension_normalize, 1},
     {"_LassosumExtension_Correlation", (DL_FUNC) &_LassosumExtension_Correlation, 1},
     {"_LassosumExtension_runElnet", (DL_FUNC) &_LassosumExtension_runElnet, 19},
+    {"_LassosumExtension_runElnet_s1", (DL_FUNC) &_LassosumExtension_runElnet_s1, 9},
     {"_LassosumExtension_RcppExport_registerCCallable", (DL_FUNC) &_LassosumExtension_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
