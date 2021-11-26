@@ -57,64 +57,6 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
     attr(result, "bXXb") <- bXXb
     attr(result, "bXy") <- bXy
     
-    
-    # Here is my code : ( Pour 2 traits, je dois l'adapter à plusieurs )
-    
-    f_lambda <- function(beta_SKZ_lambda,beta_BIP_lambda, r_hat,sd,extract_snp,keep_sujets,beta){
-  
-  # On calcule le numérateur
-  bXy <- r_hat %*% beta 
-  
-  # traitement préliminaire pour calculer les pgs 
-  
-  # Ici, il faut destandardiser les betas obtenus. 
-  # Il faut les destandardiser avec le jeu de test ( comme Mak et al. 2017)
-  # donc sd, c'est le vecteur standard deviation pour le jeu de test
-  
-  weight <- 1/sd
-  weight[!is.finite(weight)] <- 0
-  
-  scaled.beta_SKZ <- as.matrix(Diagonal(x=weight) %*% beta_SKZ_lambda)
-  scaled.beta_BIP <- as.matrix(Diagonal(x=weight) %*% beta_BIP_lambda)
-  
-  # calcul des pgs : 
-  
-  pgs_SKZ <- pgs(ref.bfile, keep=keep_sujets, extract=extract_snp, 
-                 weights=scaled.beta_SKZ)
-  pgs_BIP <- pgs(ref.bfile, keep=keep_sujets, extract=extract_snp, 
-                 weights=scaled.beta_BIP)
-  
-  #RMQ : si on a plusieurs lambda et s, pgs nous retourne une matrice, chaque colonne 
-  # représente XB pour une valeur de lambda
-  # si on a un seul lambda et un seul s, pgs nous retourne une matrice avec 
-  # une seule colonne 
-  
-  # Si on a plusieurs lambda et s en même temps : 
-  if(ncol(pgs_SKZ)>1){
-    pred <- matrix(data = NA,nrow = 2*nrow(pgs_SKZ),ncol = ncol(pgs_SKZ))
-    for(i in 1:ncol(pgs_SKZ)){
-      # Pour chaque colonne de pred, on merge les résultats de pgs pour chaque trait
-      # pour construire un vecteur XB de taille n*q( nombre de sujet*nombre de traits)
-      pred[,i] <- c(rbind(pgs_SKZ[,i],pgs_BIP[,i]))
-    }
-  }
-  else{
-    # Si on a une seule valeur de lambda et s 
-    pgs_SKZ<- as.vector(pgs_SKZ)
-    pgs_BIP<- as.vector(pgs_BIP)
-    pred <- c(rbind(pgs_SKZ,pgs_BIP))
-    
-  }
-  
-  pred2 <- scale(pred, scale=F)
-  
-  # On calcule le dénominateur : 
-  bXXb <- colSums(pred2^2) / parsed.test$n
-  
-  result <- as.vector(bXy / sqrt(bXXb))
-  return(result)
-}
-
     return(result)
     #' @return the results of the pseudovalidation, i.e. \eqn{f(\lambda)}
     

@@ -112,19 +112,10 @@ pseudovalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   PGS <- do.call("cbind", results$pgs)
   BETA <- do.call("cbind", ls.pipeline$beta)
   
-  ### We calculate shrunken correlation : 
-  
-  if(trace) cat("Minimizing PEL ...\n")
-  fdr <- minimizePEL(nbr_SNP,nbr_trait,genotypeMatrix,correlationMatrix,Beta,...)
-  # We assume we have a matrix of correlations :correlationMatrix
-  # each row represents a phenotype 
-  correlationMatrix.shrunk <- matrix(data = NA,nrow = nrow(correlationMatrix),ncol = ncol(correlationMatrix))
-  for (l in 1:nrow(correlationMatrix)){
-    correlationMatrix.shrunk[l,] <- correlationMatrix[l,]*fdr[,i]
-  }
-  
-  # I stopped here 
-
+  if(trace) cat("Estimating local fdr ...\n")
+  fdr <- fdrtool::fdrtool(ls.pipeline$sumstats$cor, statistic="correlation", 
+                          plot=F)
+  cor.shrunk <- ls.pipeline$sumstats$cor * (1 - fdr$lfdr)
   if(trace) cat("Performing pseudovalidation ...\n")
   pv <- pseudovalidation(test.bfile, 
                          beta=BETA, 

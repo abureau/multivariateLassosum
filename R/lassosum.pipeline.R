@@ -305,7 +305,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     }
     # En sortie de la boucle précédente, ss.1.commun ne contient que les SNPs communs à tous les 
     # summary statistics pour les ss du jeu 1 
-    for ( j in 2:length(cor)){
+    for (j in 2:length(cor)){
       ss.j <- get(paste0("ss.",j))
       m.commun <- matchpos(tomatch = ss.1.commun,ref.df = ss.j, auto.detect.ref = F, 
                                         ref.chr = "chr", 
@@ -333,20 +333,12 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     ### Compare summary statistics and reference panel ###
     
     if(trace) cat("Coordinating summary stats with reference panel...\n")
-    print(nrow(ref.bim))
-    print(nrow(ss.1.commun))
-    print(is.data.frame(ss.1.commun))
-    print(is.data.frame(ref.bim))
-    print(head(ref.bim))
-    print(head(ss.1.commun))
     
-    #browser()
     m.ref <- matchpos(ss.1.commun, ref.bim, auto.detect.ref = F,
                       ref.chr = "V1", ref.snp="V2",
                       ref.pos="V4", ref.alt="V5", ref.ref="V6",
                       rm.duplicates = T, exclude.ambiguous = exclude.ambiguous,
                       silent=T)
-    print("smt")
     for (j in 1:length(cor)){
       ss.j.commun <- get(paste0("ss.",j,".commun"))
       ss2.j.commun <- ss.j.commun[m.ref$order,]
@@ -359,18 +351,12 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     ### Compare summary statistics and test data ###
     if(!onefile) {
       if(trace) cat("Coordinating summary stats with test data...\n")
-        print(nrow(test.bim))
-        print(nrow(ss.1.commun))
-        print(head(test.bim))
-        print(head(ss.1.commun))
         
         m.test <- matchpos(ss.1.commun, test.bim, auto.detect.ref = F,
                          ref.chr = "V1", ref.snp="V2",
                          ref.pos="V4", ref.alt="V5", ref.ref="V6",
                          rm.duplicates = T, exclude.ambiguous = exclude.ambiguous,
                          silent=T)
-        
-        print(length(m.test$order)) 
         
       ### Find SNPs that are common to all three datasets ###
       if(trace) cat("Coordinating summary stats, reference panel, and test data...\n")
@@ -434,9 +420,6 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   
   ### Get beta estimates from lassosum ###
   
-  # I have to add code here to adapt corelation matrix for all summary statistics 
-  print(length(m.common$order))
-  print(nrow(ss2.1.commun))
   cor2 <- matrix(data = NA,nrow = length(cor),ncol = length(m.common$order))
   k <- 1
   for (j in 1:length(cor)){
@@ -474,12 +457,11 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   cor3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
   k <- 1
   for (j in 1:length(cor)){
-    assign(x = paste0("cor3.",j),value = ss3.j.commun$cor )
-    cor3[k,] <- get(paste0("cor3.",j))
-    k <- k+1 
+      ss3.j.commun <- get(paste0("ss3.",j,".commun"))
+      assign(x = paste0("cor3.",j),value = ss3.j.commun$cor )
+      cor3[k,] <- get(paste0("cor3.",j))
+      k <- k+1 
   }
-  print(nrow(ss3.1.commun))
-  print(length(m.test$order))
   
    if(any(s == 1)) {
        
@@ -637,5 +619,4 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' @note Berisa, T. & Pickrell, J. K.
   #' Approximately independent linkage disequilibrium blocks in human populations.
   #' Bioinformatics 32, 283-285 (2015).
-
 }
