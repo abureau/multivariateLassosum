@@ -556,6 +556,108 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 }
 
 
+//' Performs elnet with s = 1
+//'
+//' @param lambda1 lambda
+//' @param r correlations
+//' @param inv_Sb the inverse of the variance-covariance matrix of genetic effects
+//' @param inv_Ss the inverse of the residual variance matrix
+//' @param x beta coef
+//' @param thr threshold
+//' @param yhat a vector
+//' @param trace if >1 displays the current iteration
+//' @param maxiter maximal number of iterations
+//' @param sample_size
+//' @return conv
+
+
+// [[Rcpp::export]]
+
+int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma ::mat& inv_Sb,
+          const arma ::mat& inv_Ss ,double thr, arma::vec& x, 
+          int trace, int maxiter,const arma::vec& sample_size)
+{
+    
+
+
+  double dlx,del,t1,t2,t3, A,S,C ;
+
+  // j : indice des SNPs, k : indice des traits, m: indice des it?rations, u indice pour parcourir le vecteur x ( des betas ),
+  // h indice utilis? pour d?finir t1 , l incide utilis? pour d?finir t3
+  int j,k,m,u,h,l;
+
+  // On d?finit le vecteur x_before ( qui contient les valeurs des betas ? l'it?ration t-1 )
+  arma :: vec x_before(pq,arma::fill::zeros);
+
+  int conv=0;
+
+  for(m=0;m<maxiter ;m++) {
+    dlx=0.0;
+    // Mon beta est x : c'est un vecteur de taille pq : x = ( q betas pour le SNP1 , q betas pour le SNP 2, .., q betas pour le SNP p )
+
+    x_before = x;
+
+    // boucle sur les SNPS :
+    for (j= 0; j<p; j++) {
+
+      // Pour chaque SNP, on fait une boucle sur les traits :
+      for(k=0; k < q; k++) {
+
+        x.at(q*j+k)=0.0;
+
+
+        // On initialise les termes dont on aura besoin : t1, t2 et t3 ( ce sont les 3 composantes de A comme d?finie dans la partie th?orique )
+        // ainsi que A et S
+
+        t1 = 0.0 ;
+        t2 = 0.0 ;
+        A = 0.0 ;
+
+        // On d?finit le terme t1 :
+
+        for (h =0 ; h<q;h++){
+          if (h!=k) t1=t1+ inv_Sb.at(k,h)*x.at(q*j+h);
+        }
+
+        t1=-(0.5)*t1;
+
+        // On d?finit le terme t2 :
+
+        t2 = sample_size.at(k)*(arma::dot(inv_Ss.row(k),r.subvec(q*j,q*(j+1)-1)))  ;
+
+        A=t1+t2;
+
+        // On d?finit maintenant la solution Beta
+
+        if (A < 0){
+          if (A + lambda1 <=0 ) {
+            x.at(q*j+k) = (A+ lambda1)/(inv_Ss.at(k,k)+inv_Sb.at(k,k));
+          }
+        }
+
+        if (A > 0){
+          if (A - lambda1>= 0){
+            x.at(q*j+k) = (A- lambda1)/(inv_Ss.at(k,k)+inv_Sb.at(k,k));
+          }
+        }
+
+        if (x.at(q*j+k)==x_before.at(q*j+k) ) continue;
+        del = x.at(q*j+k)-x_before.at(q*j+k);
+        dlx=std::max(dlx,std::abs(del));
+      }
+    }
+
+    checkUserInterrupt();
+    if(trace > 0) Rcout << "Iteration: " << m << "\n";
+
+    if(dlx < thr) {
+      conv=1;
+      break;
+    }
+  }
+ return conv;
+}
+
 // [[Rcpp::export]]
 int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::mat& inv_Sb, arma ::mat& inv_Ss,
              arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size,
@@ -882,4 +984,73 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
                       Named("loss") = loss,
                       Named("fbeta") = fbeta,
                       Named("sd")= sd);
+}
+
+//' Runs elnet_s1 with various parameters
+//'
+//' @param lambda1 a vector of lambdas 
+//' @param cor a matrix of correlations, rows represent phenotypes, and columns represent SNPs
+//' @param inv_Sb the inverse of the variance-covariance matrix of genetic effects
+//' @param inv_Ss the inverse of the residual variance matrix
+//' @param thr threshold
+//' @param init a numeric matrix of beta coefficients
+//' @param trace if >1 displays the current iteration
+//' @param maxiter maximal number of iterations
+//' @return a list of results
+//' @keywords internal
+//'
+
+// [[Rcpp::export]]
+
+
+
+List runElnet_s1(arma::vec& lambda,arma::mat& cor, arma ::mat& inv_Sb ,arma ::mat& inv_Ss,
+              double thr, arma::mat& init, int trace, int maxiter,const arma::vec& sample_size) {
+
+
+    int i,nbr_snps,nbr_trait,nbr_snps_trait ;
+    
+    nbr_snps = cor.n_cols ;
+    nbr_trait = cor.n_rows;
+    nbr_snps_trait = nbr_snps*nbr_trait;
+
+ 
+  // Ici, je transforme cor et init en des vecteurs pour pouvoir travailler avec :
+
+  arma::vec r(cor.n_rows*cor.n_cols,arma::fill::zeros);
+  int b = 0;
+  for(int a=0; a < r.n_elem; a+=cor.n_rows) {
+    r.subvec(a,a+cor.n_rows-1) = cor.col(b);
+    b=b+1;
+  }
+
+  arma::vec x(init.n_rows*init.n_cols,arma::fill::zeros);
+  int q = 0;
+  for(int e=0; e < x.n_elem; e+=init.n_rows) {
+    x.subvec(e,e+init.n_rows-1) = init.col(q);
+    q=q+1;
+  }
+
+  arma::Col<int> conv(lambda.n_elem);
+  int len = r.n_elem;
+
+  arma::mat beta(len, lambda.n_elem);
+  arma::vec out(lambda.n_elem);
+
+  // Rcout << "Starting loop" << std::endl;
+  for (i = 0; i < lambda.n_elem; ++i) {
+    if (trace > 0)
+      Rcout << "lambda: " << lambda(i) << "\n" << std::endl;
+    out.at(i) =
+      elnet_s1(lambda(i),r,nbr_snps,nbr_trait,nbr_snps_trait,inv_Sb,inv_Ss, thr, x, trace-1, maxiter,sample_size);
+    beta.col(i) = x;
+
+    if (out(i) != 1) {
+      throw std::runtime_error("Not converging.....");
+    }
+  }
+
+  return List::create(Named("lambda") = lambda,
+                      Named("beta") = beta,
+                      Named("conv") = out);
 }

@@ -196,12 +196,6 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
   results$loss <- as.vector(results$loss)
   results$fbeta <- as.vector(results$fbeta)
   results$lambda <- as.vector(results$lambda)
-
-  # Pour éviter les confusions, on va donner des noms à tous les vecteurs pour indiquer
-  # de quel lambda il s'agit. 
-  
-  # On va également construire 2 nouvelles matrice ( beta et pred) ou on va avoir 
-  # une combinaison trait et lambda pour chaque colonne.
   
   BETA <- matrix(data = NA,nrow = ncol(cor))
   for (j in 1:(ncol(results$beta))){
