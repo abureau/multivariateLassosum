@@ -488,23 +488,14 @@ static int _LassosumExtension_RcppExport_validate(const char* sig) {
         signatures.insert("int(*countlines)(const char*)");
         signatures.insert("arma::mat(*multiBed3)(const std::string,int,int,const arma::mat,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::mat(*multiBed3sp)(const std::string,int,int,const arma::vec,const arma::Col<int>,const arma::Col<int>,const int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
-<<<<<<< HEAD
         signatures.insert("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
         signatures.insert("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
         signatures.insert("arma::mat(*genotypeMatrix)(const std::string,int,int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
         signatures.insert("arma::vec(*normalize)(arma::mat&)");
         signatures.insert("arma::mat(*Correlation)(arma::mat&)");
         signatures.insert("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::vec&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
-=======
-        signatures.insert("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
         signatures.insert("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::mat&,const arma ::mat&,double,arma::vec&,int,int,const arma::vec&)");
-        signatures.insert("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
-        signatures.insert("arma::mat(*genotypeMatrix)(const std::string,int,int,arma::Col<int>,arma::Col<int>,arma::Col<int>,arma::Col<int>,const int)");
-        signatures.insert("arma::vec(*normalize)(arma::mat&)");
-        signatures.insert("arma::mat(*Correlation)(arma::mat&)");
-        signatures.insert("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
         signatures.insert("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::mat&,arma ::mat&,double,arma::mat&,int,int,const arma::vec&)");
->>>>>>> Package
     }
     return signatures.find(sig) != signatures.end();
 }

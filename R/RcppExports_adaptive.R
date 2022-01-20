@@ -118,17 +118,12 @@ elnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x,
     .Call(`_LassosumExtension_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size)
 }
 
-<<<<<<< HEAD
 repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
     .Call(`_LassosumExtension_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
-=======
 elnet_s1 <- function(lambda1, r, p, q, pq, inv_Sb, inv_Ss, thr, x, trace, maxiter, sample_size) {
     .Call(`_LassosumExtension_elnet_s1`, lambda1, r, p, q, pq, inv_Sb, inv_Ss, thr, x, trace, maxiter, sample_size)
 }
 
-repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_LassosumExtension_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
->>>>>>> Package
 }
 
 #' imports genotypeMatrix
