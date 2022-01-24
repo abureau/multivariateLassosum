@@ -24,6 +24,7 @@
 #' @param bfile PLINK bfile (as character, without the .bed extension)
 #' @param lambda A vector of \eqn{\lambda}s (the tuning parameter)
 #' @param shrink The shrinkage parameter \eqn{s} for the correlation matrix \eqn{R}
+#' @param weights 
 #' @param thr convergence threshold for \eqn{\beta}
 #' @param init Initial values for \eqn{\beta} as a Matrix of the same dimensions as \code{cor}
 #' @param trace An integer controlling the amount of output generated.
