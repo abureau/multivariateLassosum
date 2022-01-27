@@ -574,7 +574,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 // [[Rcpp::export]]
 
 int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma ::mat& inv_Sb,
-          const arma ::mat& inv_Ss ,double thr, arma::vec& x, 
+          const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, 
           int trace, int maxiter,const arma::vec& sample_size)
 {
     
@@ -630,14 +630,14 @@ int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma 
         // On d?finit maintenant la solution Beta
 
         if (A < 0){
-          if (A + lambda1 <=0 ) {
-            x.at(q*j+k) = (A+ lambda1)/(inv_Ss.at(k,k)+inv_Sb.at(k,k));
+          if (A + lambda1*weights(q*j+k) <=0 ) {
+            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k));
           }
         }
 
         if (A > 0){
-          if (A - lambda1>= 0){
-            x.at(q*j+k) = (A- lambda1)/(inv_Ss.at(k,k)+inv_Sb.at(k,k));
+          if (A - lambda1*weights(q*j+k)>= 0){
+            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k));
           }
         }
 
@@ -1004,7 +1004,7 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
 
 
 
-List runElnet_s1(arma::vec& lambda,arma::mat& cor, arma ::mat& inv_Sb ,arma ::mat& inv_Ss,
+List runElnet_s1(arma::vec& lambda,arma::mat& cor, arma ::mat& inv_Sb ,arma ::mat& inv_Ss, arma::vec& weights,
               double thr, arma::mat& init, int trace, int maxiter,const arma::vec& sample_size) {
 
 
@@ -1042,7 +1042,7 @@ List runElnet_s1(arma::vec& lambda,arma::mat& cor, arma ::mat& inv_Sb ,arma ::ma
     if (trace > 0)
       Rcout << "lambda: " << lambda(i) << "\n" << std::endl;
     out.at(i) =
-      elnet_s1(lambda(i),r,nbr_snps,nbr_trait,nbr_snps_trait,inv_Sb,inv_Ss, thr, x, trace-1, maxiter,sample_size);
+      elnet_s1(lambda(i),r,nbr_snps,nbr_trait,nbr_snps_trait,inv_Sb,inv_Ss, weights, thr, x, trace-1, maxiter,sample_size);
     beta.col(i) = x;
 
     if (out(i) != 1) {
