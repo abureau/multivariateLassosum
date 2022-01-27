@@ -81,7 +81,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' For \code{keep.ref}, \code{remove.ref}, \code{keep.test}, and \code{remove.test},
   #' see the documentation for \code{keep} and \code{remove} in \code{\link{lassosum}}
   #' for details.
-  #' @importFrom lassosum sd.bfile
+  #' @importFrom lassosum sd.bfile, matlib inv
   #' @export
   #'
 

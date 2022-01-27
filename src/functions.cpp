@@ -509,7 +509,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
           if(l!=j) S = S + C;
         }
 
-        t3 = -1*(inv_Ss.at(k,k))*S;
+        t3 = -sample_size.at(k)*(inv_Ss.at(k,k))*S;
 
         A=t1+t2+t3;
 
@@ -517,13 +517,13 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 
         if (A < 0){
           if (A + lambda1*weights(q*j+k) <=0 ) {
-            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*sample_size.at(k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 
         if (A > 0){
           if (A - lambda1*weights(q*j+k)>= 0){
-            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*denom(j)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*sample_size.at(k)*denom(j)+inv_Sb.at(k,k));
           }
         }
 

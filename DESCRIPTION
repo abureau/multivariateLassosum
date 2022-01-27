@@ -1,16 +1,25 @@
-Package: LassosumExtension
+Package: multivariateLassosum
 Type: Package
-Title: What the Package Does Using Title Case
-Version: 1.0
+Title: LASSO with summary statistics and a reference panel for multiple phenotypes
+Version: 1.0.0
 Date: 2021-05-27
-Author: MeriemBahda
-Maintainer: MeriemBahda <65908120+MeriemBahda@users.noreply.github.com>
-Description: More details about what the package does. See
-         <http://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file>
-         for details on how to write this part.
-License: GPL (>= 2)
-Suggests: tinytest
-Encoding: UTF-8
-RoxygenNote: 7.1.1
-Imports: Rcpp (>= 1.0.6)
+Author: Alexandre Bureau, Meriem Bahda
+Maintainer: Meriem Bahda <meriembahda@gmail.com>
+Description: Performs polygenic risk score estimation for multiple phenotypes simultaneously with a LASSO penalized mixed model, which uses summary statistics and a reference panel of genotypes.
+License: GPL-3
+LazyData: TRUE
+Includes: Rcpp
 LinkingTo: Rcpp, RcppArmadillo
+Imports:
+    Rcpp (>= 0.11.0),
+    Matrix, 
+    data.table
+Suggests:
+    glmnet, 
+    testthat,
+    devtools, 
+    fdrtool,
+    knitr,
+    rmarkdown
+RoxygenNote: 7.1.1
+Encoding: UTF-8
