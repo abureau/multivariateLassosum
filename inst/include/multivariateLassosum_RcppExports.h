@@ -92,13 +92,8 @@ namespace multivariateLassosum {
         typedef SEXP(*Ptr_elnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_elnet p_elnet = NULL;
         if (p_elnet == NULL) {
-<<<<<<< HEAD:inst/include/LassosumExtension_RcppExports_adaptive.h
             validateSignature("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
-            p_elnet = (Ptr_elnet)R_GetCCallable("LassosumExtension", "_LassosumExtension_elnet");
-=======
-            validateSignature("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
             p_elnet = (Ptr_elnet)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_elnet");
->>>>>>> Package:inst/include/multivariateLassosum_RcppExports.h
         }
         RObject rcpp_result_gen;
         {
@@ -114,17 +109,17 @@ namespace multivariateLassosum {
         return Rcpp::as<int >(rcpp_result_gen);
     }
 
-    inline int elnet_s1(double lambda1, const arma::vec& r, int p, int q, int pq, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, double thr, arma::vec& x, int trace, int maxiter, const arma::vec& sample_size) {
-        typedef SEXP(*Ptr_elnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline int elnet_s1(double lambda1, const arma::vec& r, int p, int q, int pq, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, int trace, int maxiter, const arma::vec& sample_size) {
+        typedef SEXP(*Ptr_elnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_elnet_s1 p_elnet_s1 = NULL;
         if (p_elnet_s1 == NULL) {
-            validateSignature("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::mat&,const arma ::mat&,double,arma::vec&,int,int,const arma::vec&)");
+            validateSignature("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,int,int,const arma::vec&)");
             p_elnet_s1 = (Ptr_elnet_s1)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_elnet_s1");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_elnet_s1(Shield<SEXP>(Rcpp::wrap(lambda1)), Shield<SEXP>(Rcpp::wrap(r)), Shield<SEXP>(Rcpp::wrap(p)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(pq)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)));
+            rcpp_result_gen = p_elnet_s1(Shield<SEXP>(Rcpp::wrap(lambda1)), Shield<SEXP>(Rcpp::wrap(r)), Shield<SEXP>(Rcpp::wrap(p)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(pq)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(weights)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -139,13 +134,8 @@ namespace multivariateLassosum {
         typedef SEXP(*Ptr_repelnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_repelnet p_repelnet = NULL;
         if (p_repelnet == NULL) {
-<<<<<<< HEAD:inst/include/LassosumExtension_RcppExports_adaptive.h
             validateSignature("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
-            p_repelnet = (Ptr_repelnet)R_GetCCallable("LassosumExtension", "_LassosumExtension_repelnet");
-=======
-            validateSignature("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
             p_repelnet = (Ptr_repelnet)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_repelnet");
->>>>>>> Package:inst/include/multivariateLassosum_RcppExports.h
         }
         RObject rcpp_result_gen;
         {
@@ -228,13 +218,8 @@ namespace multivariateLassosum {
         typedef SEXP(*Ptr_runElnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_runElnet p_runElnet = NULL;
         if (p_runElnet == NULL) {
-<<<<<<< HEAD:inst/include/LassosumExtension_RcppExports_adaptive.h
             validateSignature("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::vec&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
-            p_runElnet = (Ptr_runElnet)R_GetCCallable("LassosumExtension", "_LassosumExtension_runElnet");
-=======
-            validateSignature("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
             p_runElnet = (Ptr_runElnet)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_runElnet");
->>>>>>> Package:inst/include/multivariateLassosum_RcppExports.h
         }
         RObject rcpp_result_gen;
         {
@@ -250,17 +235,17 @@ namespace multivariateLassosum {
         return Rcpp::as<List >(rcpp_result_gen);
     }
 
-    inline List runElnet_s1(arma::vec& lambda, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size) {
-        typedef SEXP(*Ptr_runElnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline List runElnet_s1(arma::vec& lambda, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size) {
+        typedef SEXP(*Ptr_runElnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_runElnet_s1 p_runElnet_s1 = NULL;
         if (p_runElnet_s1 == NULL) {
-            validateSignature("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::mat&,arma ::mat&,double,arma::mat&,int,int,const arma::vec&)");
+            validateSignature("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::mat&,arma ::mat&,arma::vec&,double,arma::mat&,int,int,const arma::vec&)");
             p_runElnet_s1 = (Ptr_runElnet_s1)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_runElnet_s1");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_runElnet_s1(Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(cor)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)));
+            rcpp_result_gen = p_runElnet_s1(Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(cor)), Shield<SEXP>(Rcpp::wrap(inv_Sb)), Shield<SEXP>(Rcpp::wrap(inv_Ss)), Shield<SEXP>(Rcpp::wrap(weights)), Shield<SEXP>(Rcpp::wrap(thr)), Shield<SEXP>(Rcpp::wrap(init)), Shield<SEXP>(Rcpp::wrap(trace)), Shield<SEXP>(Rcpp::wrap(maxiter)), Shield<SEXP>(Rcpp::wrap(sample_size)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
