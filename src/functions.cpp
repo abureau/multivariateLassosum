@@ -637,7 +637,7 @@ int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma 
 
         if (A > 0){
           if (A - lambda1>= 0){
-            x.at(q*j+k) = (A- lambda1)/(inv_Ss.at(k,k)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A- lambda1)/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k));
           }
         }
 
