@@ -81,7 +81,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' For \code{keep.ref}, \code{remove.ref}, \code{keep.test}, and \code{remove.test},
   #' see the documentation for \code{keep} and \code{remove} in \code{\link{lassosum}}
   #' for details.
-  #' @importFrom lassosum sd.bfile, matlib inv
+  #' @importFrom lassosum sd.bfile
   #' @export
   #'
 
@@ -163,7 +163,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     cat("The adaptive version is used.\n")
   }else{
     weights <- vector(mode = "list", length = length(cor))
-    for(pheno in length(cor)){
+    for(pheno in 1:length(cor)){
       weights[pheno] <- data.frame(rep(1, length(cor[pheno])))
     }
   }
