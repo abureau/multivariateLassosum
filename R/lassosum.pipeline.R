@@ -164,7 +164,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   }else{
     weights <- vector(mode = "list", length = length(cor))
     for(pheno in 1:length(cor)){
-      weights[pheno] <- data.frame(rep(1, length(cor[pheno])))
+      weights[pheno] <- data.frame(rep(1, length(cor[[pheno]])))
     }
   }
 
