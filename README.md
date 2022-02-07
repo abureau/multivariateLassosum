@@ -7,4 +7,5 @@ This package was developed by Meriem Bahda with contributions from Jasmin Ricard
 To install, from within R, type:
 
 library(devtools)
+
 install_github("abureau/multivariateLassosum")
