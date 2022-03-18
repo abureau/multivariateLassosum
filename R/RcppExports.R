@@ -114,16 +114,16 @@ multiBed3sp <- function(fileName, N, P, beta, nonzeros, colpos, ncol, col_skip_p
 #' @return conv
 #' @keywords internal
 #'
-elnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size) {
-    .Call(`_multivariateLassosum_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size)
+elnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size) {
+    .Call(`_multivariateLassosum_elnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size)
 }
 
-elnet_s1 <- function(lambda1, r, p, q, pq, inv_Sb, inv_Ss, thr, x, trace, maxiter, sample_size) {
-    .Call(`_multivariateLassosum_elnet_s1`, lambda1, r, p, q, pq, inv_Sb, inv_Ss, thr, x, trace, maxiter, sample_size)
+elnet_s1 <- function(lambda1, r, p, q, pq, inv_Sb, inv_Ss, weights, thr, x, trace, maxiter, sample_size) {
+    .Call(`_multivariateLassosum_elnet_s1`, lambda1, r, p, q, pq, inv_Sb, inv_Ss, weights, thr, x, trace, maxiter, sample_size)
 }
 
-repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_multivariateLassosum_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
+repelnet <- function(lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec) {
+    .Call(`_multivariateLassosum_repelnet`, lambda1, lambda2, diag, X, r, inv_Sb, inv_Ss, weights, thr, x, yhat, trace, maxiter, sample_size, startvec, endvec)
 }
 
 #' imports genotypeMatrix
@@ -164,12 +164,12 @@ Correlation <- function(genotypes) {
     .Call(`_multivariateLassosum_Correlation`, genotypes)
 }
 
-runElnet <- function(lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec) {
-    .Call(`_multivariateLassosum_runElnet`, lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, thr, init, trace, maxiter, sample_size, startvec, endvec)
+runElnet <- function(lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, weights, thr, init, trace, maxiter, sample_size, startvec, endvec) {
+    .Call(`_multivariateLassosum_runElnet`, lambda, shrink, fileName, cor, inv_Sb, inv_Ss, N, P, col_skip_pos, col_skip, keepbytes, keepoffset, weights, thr, init, trace, maxiter, sample_size, startvec, endvec)
 }
 
-runElnet_s1 <- function(lambda, cor, inv_Sb, inv_Ss, thr, init, trace, maxiter, sample_size) {
-    .Call(`_multivariateLassosum_runElnet_s1`, lambda, cor, inv_Sb, inv_Ss, thr, init, trace, maxiter, sample_size)
+runElnet_s1 <- function(lambda, cor, inv_Sb, inv_Ss, weights, thr, init, trace, maxiter, sample_size) {
+    .Call(`_multivariateLassosum_runElnet_s1`, lambda, cor, inv_Sb, inv_Ss, weights, thr, init, trace, maxiter, sample_size)
 }
 
 # Register entry points for exported C++ functions

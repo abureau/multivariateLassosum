@@ -6,6 +6,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                               lambda=exp(seq(log(0.001), log(0.1), length.out=20)),
                               s=c(0.2, 0.5, 0.9, 1),
                               destandardize=F,
+                              weights=NULL,
                               trace=1,
                               exclude.ambiguous=TRUE,
                               keep.ref=NULL, remove.ref=NULL,
@@ -22,7 +23,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #'            the user gives cor, chr, etc . They should have the same lenght. If the user doesnt want to give an argument
   #'            he can just specify NULL for a phenotype.  
   #' @param phenotypic.genetic.Var.Cov.matrix : matrice variance covariance genetique des phenotypes ( should be semi defini positive)
-  #' @param Var.phenotypic : vecteur de la variance phénotypic ( on peut parfois supposer == 1) 
+  #' @param Var.phenotypic : vecteur de la variance ph?notypic ( on peut parfois supposer == 1) 
   #' @param chr  A list, each element is for a phenotype. Together with \code{pos}, chromosome and position for \code{cor}
   #' @param pos  A list, each element is for a phenotype. Together with \code{chr}, chromosome and position for \code{cor}
   #' @param A1  A list, each element is for a phenotype : Alternative allele (effect allele) for \code{cor}
@@ -38,6 +39,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' @param s A vector of s
   #' @param destandardize Should coefficients from \code{\link{lassosum}} be
   #' destandardized using test dataset standard deviations before being returned?
+  #' @param weights a list, each elements is a vector of weights for a phenotype, derived from summary statistics.
   #' @param trace Controls the amount of output.
   #' @param exclude.ambiguous Should ambiguous SNPs (C/G, A/T) be excluded?
   #' @param keep.ref Participants to keep from the reference panel (see \code{\link{parseselect}})
@@ -79,7 +81,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' For \code{keep.ref}, \code{remove.ref}, \code{keep.test}, and \code{remove.test},
   #' see the documentation for \code{keep} and \code{remove} in \code{\link{lassosum}}
   #' for details.
-  #' @importFrom lassosum sd.bfile, matlib inv
+  #' @importFrom lassosum sd.bfile
   #' @export
   #'
 
@@ -139,8 +141,12 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     A2 <- list(A2)
     message("The argument A2 was transformed into a list")
   } 
-
-  # On garde ce code pour vérifier si l'utilisateur a donné en entrée ces arguments
+  if(!is.null(weights) && !is.list(weights)){
+    weights <- list(weights)
+    message("The argument weights was transformed into a list")
+  } 
+  
+  # On garde ce code pour v?rifier si l'utilisateur a donn? en entr?e ces arguments
   chrpos <- !is.null(chr) && !is.null(pos)
   if(is.null(snp) && !chrpos) {
     stop("Either snp or chr/pos must be specified.")
@@ -151,17 +157,34 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   } else if(is.null(A1) || is.null(A2)) {
     # message("Matching on 1 allele only.")
   }
+  
+  # V?rification sur l'entr?e de weights
+  if(!is.null(weights)) {
+    cat("The adaptive version is used.\n")
+  }else{
+    weights <- vector(mode = "list", length = length(cor))
+    for(pheno in 1:length(cor)){
+      weights[pheno] <- data.frame(rep(1, length(cor[[pheno]])))
+    }
+  }
 
   stopifnot(!any(is.na(cor)))
-  for (i in length(cor)){
+  for (i in 1:length(cor)){
     stopifnot(all(cor[[i]] > -1 & cor[[i]] < 1))
   }
+  
+  #Verifier si certains poids sont manquants
+  stopifnot("Weights are missing"=!any(is.na(weights)))
   
   for (i in 1:length(cor)){
     chrpos <- !is.null(chr[[i]]) && !is.null(pos[[i]])
     if(is.null(snp[[i]]) && !chrpos) {
       stop("For each phenotype : Either snp or chr/pos must be specified.")
-  } 
+    } 
+    #Verifier s'il y a les poids pour chaque pheno
+    if(is.null(weights[[i]]) && !chrpos) {
+      stop("For each phenotype : Weights must be specified to used the adaptive version.")
+    } 
   
     if(is.null(A1[[i]]) && is.null(A2[[i]])) {
       stop("For each phenotype : At least one of A1 (alternative allele) or A2 (reference allele) must be specified. Preferably both.")
@@ -178,9 +201,11 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   }
     stopifnot(is.null(A1[[i]]) || length(A1[[i]]) == length(cor[[i]]))
     stopifnot(is.null(A2[[i]]) || length(A2[[i]]) == length(cor[[i]]))
+    #Verifier s'il existe un poids pour chaque SNP
+    stopifnot(is.null(weights[[i]]) || length(weights[[i]]) == length(cor[[i]]))
   }
-  
-  # On fait les vérifications sur la matrice variance-cov genetique et vecteur de 
+
+  # On fait les v?rifications sur la matrice variance-cov genetique et vecteur de 
   # la variance phenotypic : 
   
   # I have to add explanatory messages here 
@@ -188,7 +213,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   stopifnot(nrow(phenotypic.genetic.Var.Cov.matrix)==ncol(phenotypic.genetic.Var.Cov.matrix))
   stopifnot(nrow(phenotypic.genetic.Var.Cov.matrix)==length(Var.phenotypic))
   
-  # On teste si la matrice est semi définie positive
+  # On teste si la matrice est semi d?finie positive
   matrixcalc::is.positive.semi.definite(phenotypic.genetic.Var.Cov.matrix, tol = 1e-8)
   # Add error message here 
   
@@ -257,10 +282,11 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                               list(test.bfile, keep.test, remove.test))
 
   
-  # On doit construit ss pour chaque phénotypes : 
+  # On doit construit ss pour chaque ph?notypes : 
   ### ss ###
+  #poids ajout?s.
   for (j in 1:length(cor)){
-    ss <- list(chr=chr[[j]], pos=pos[[j]], A1=A1[[j]], A2=A2[[j]], snp=snp[[j]], cor=cor[[j]])
+    ss <- list(chr=chr[[j]], pos=pos[[j]], A1=A1[[j]], A2=A2[[j]], snp=snp[[j]], cor=cor[[j]], weigths=weights[[j]])
     ss[sapply(ss, is.null)] <- NULL
     ss <- as.data.frame(ss)
     assign(x = paste0("ss.", j), value = ss)
@@ -271,7 +297,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     # On va etudier les SNPs communs entre ss.1 et ss.2, et je construit ss.1.2, 
   # ensuite SNPs communs entre ss.1.2 et ss.3, etc. 
   # et quand j'obtient ss.1.2.3.. final, je vais le comparer encore une fois pour 
-  # chacun des jeux et sélectionner les SNPs communs. 
+  # chacun des jeux et s?lectionner les SNPs communs. 
   
     if (length(cor) == 1) ss.1.commun <- ss.1
   
@@ -282,7 +308,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                                         rm.duplicates = T, exclude.ambiguous = exclude.ambiguous, 
                                         silent=T)
     # On construit de nouveaux summary statistics qu'avec les SNPs communs aux 
-    # 2 jeux de données : 
+    # 2 jeux de donn?es : 
 
     ss.1.commun<-ss.1[m.commun$order,]
 
@@ -300,10 +326,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                                         silent=T)
       
       # On construit un nouvel data frame ss.1.commun qu'avec les SNPs communs aux 
-      # 2 jeux de données : 
+      # 2 jeux de donn?es : 
       ss.1.commun <- ss.1.commun[m.commun$order,]
     }
-    # En sortie de la boucle précédente, ss.1.commun ne contient que les SNPs communs à tous les 
+    # En sortie de la boucle pr?c?dente, ss.1.commun ne contient que les SNPs communs ? tous les 
     # summary statistics pour les ss du jeu 1 
     for (j in 2:length(cor)){
       ss.j <- get(paste0("ss.",j))
@@ -314,7 +340,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                                         silent=T)
       
       # On construit les nouveaux data frame pour les autres summary ss
-      # qu'avec les SNPs communs aux 2 jeux de données : 
+      # qu'avec les SNPs communs aux 2 jeux de donn?es : 
       assign(x = paste0("ss.",j,".commun"),value = ss.j[m.commun$ref.extract,])
     }
   }
@@ -419,13 +445,16 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   s.minus.1 <- s[s != 1]
   
   ### Get beta estimates from lassosum ###
-  
+  #poids ajout?s
   cor2 <- matrix(data = NA,nrow = length(cor),ncol = length(m.common$order))
+  w2 <- matrix(data = NA,nrow = length(cor),ncol = length(m.common$order))
   k <- 1
   for (j in 1:length(cor)){
     ss2.j.commun <- get(paste0("ss2.",j,".commun"))
     assign(x = paste0("cor2.",j),value = ss2.j.commun$cor[sort(m.common$order)] )
+    assign(x = paste0("w2.",j),value = ss2.j.commun$weigths[sort(m.common$order)] )
     cor2[k,] <- get(paste0("cor2.",j))
+    w2[k,] <- get(paste0("w2.",j))
     k <- k+1 
     }
   ls <- list()
@@ -433,9 +462,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     if(trace) cat("Running lassosum ...\n")
     ls <- lapply(s.minus.1, function(s) {
       if(trace) cat("s = ", s, "\n")
+      #Adapt? aux poids - OK.
       lassosum(cor=cor2,inv_Sb, inv_Ss, bfile=ref.bfile,
                    shrink=s, extract=ref.extract, lambda=lambda,
-                   blocks = LDblocks, trace=trace-1,
+                   blocks = LDblocks, trace=trace-1, weights=w2,
                    keep=parsed.ref$keep, cluster=cluster,sample_size = sample_size, ...)
     })
     # We get the name of the columns of Beta in ls because we will need it later
@@ -454,12 +484,16 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     ss3.j.commun$order <- m.test$order
     assign(x = paste0("ss3.",j,".commun"),value = ss3.j.commun )
   }
+  #poids ajout?s
   cor3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
+  w3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
   k <- 1
   for (j in 1:length(cor)){
       ss3.j.commun <- get(paste0("ss3.",j,".commun"))
       assign(x = paste0("cor3.",j),value = ss3.j.commun$cor )
+      assign(x = paste0("w3.",j),value = ss3.j.commun$weigths )
       cor3[k,] <- get(paste0("cor3.",j))
+      w3[k,] <- get(paste0("w3.",j))
       k <- k+1 
   }
   
@@ -468,7 +502,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
         # On construit la matrice Inv_Sb pour les SNPs commun aux 
         # 2 jeux ( summary statistics et jeu de test)
        # Je reconstruis la matrice sigma_b car le nombre de snps 
-       # est différent ici ( on travaille avec les snps communs
+       # est diff?rent ici ( on travaille avec les snps communs
        # au summary statistics et le jeu de test seulement)
   
      nbr_SNPs <- nrow(ss3.1.commun)
@@ -476,8 +510,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
      inv_Sb <- matlib::inv(Sigma_b)
      
      if(trace) cat("Running lassosum with s=1...\n")
-     # J'ai adapté la fonction indeplasso au cas multivariate
-       il <- indeplasso(cor = cor3,inv_Sb,inv_Ss,lambda,sample_size)
+     # J'ai adapt? la fonction indeplasso au cas multivariate
+     #Adapt?s aux poids - indeplasso - OK!
+     #Adapt?s aux poids - runElnet_s1 - NON!
+       il <- indeplasso(cor = cor3,inv_Sb,inv_Ss,lambda,sample_size, weigths = w3)
    } else {
        il <- list(beta=matrix(0, nrow=length(m.test$order), ncol=length(cor)*length(lambda)))
    }

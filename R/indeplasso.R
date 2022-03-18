@@ -9,7 +9,7 @@
 #' is given by
 #' \deqn{\hat{\beta}=sign(r)(max(|r| - \lambda))}
 #' @export
-indeplasso <- function(cor,inv_Sb, inv_Ss, lambda,sample_size,init=NULL, trace=0, maxiter=10000) {
+indeplasso <- function(cor,inv_Sb, inv_Ss, lambda,sample_size, weigths, init=NULL, trace=0, maxiter=10000) {
   
   
   if(is.null(init)) init <- matrix(rep(0.0, ncol(cor)),nrow = nrow(cor),ncol = ncol(cor)) else {
