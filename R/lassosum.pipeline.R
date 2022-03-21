@@ -445,7 +445,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
       inv_Sb <- array(Rfast::spdinv(Sigma_b),c(dm[1],dm[2],nbr_SNPs))
     }
     
-  # On construit la matrice Sigma_S :
+  # On construit la matrice inv_Ss  :
   
   if (length(dm)==3) # Soustraire la somme des covariances génétiques de tous les SNPs
   {
@@ -458,8 +458,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     
   if (any(Var.phenotypic < Var.genetic)) stop("The genetic variance of at least on trait exceeds the phenotypic variance.")
   Var.environmental = Var.phenotypic - Var.genetic
-  Sigma_s <- diag(x = Var.environmental)
-  inv_Ss <- 1/Sigma_s
+  inv_Ss  <- diag(x = 1/Var.environmental)
 
 
   ### Split data by ld region ###
