@@ -71,11 +71,11 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
     }
   }
 
-	# Si les poids sont absents, on les fixe à 1
+	# Si les poids sont absents, on les fixe ? 1
 	if (is.null(weights)) weights = matrix(1,nrow(cor),ncol(cor))
 	
   #On teste si la matrice Inv_Sb est semi d?finie positive
-  if(!matrixcalc::is.positive.semi.definite(inv_Sb, tol=1e-8)) warning("The inverse of the variance-covariance matrix is not positive semi defined")
+  if(!all(apply(inv_Sb,3,matrixcalc::is.positive.semi.definite, tol=1e-8))) warning("The inverse of at least one variance-covariance matrix is not positive semi definite")
 
   #On teste si la matrice Inv_Ss est diagonale
   if(!matrixcalc::is.diagonal.matrix(inv_Ss, tol=1e-8)) warning("The inverse of the residual matrix is not diagonal")
@@ -110,7 +110,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
       results.list <- lapply(unique(chunks$chunks.blocks), function(i) {
         # On selectionne les chunks pour tous les traits de la matrice cor
         # On selectionne les chunkcs pour tous les traits de la matrice init
-        lassosum(cor=cor[,chunks$chunks==i],inv_Sb,inv_Ss,bfile=bfile, lambda=lambda, shrink=shrink,
+        lassosum(cor=cor[,chunks$chunks==i],inv_Sb[,,chunks$chunks==i],inv_Ss,bfile=bfile, lambda=lambda, shrink=shrink,
                  weights=weights[,chunks$chunks==i],thr=thr, init=init[,chunks$chunks==i], 
                  trace=trace-0.5, maxiter=maxiter,
                  blocks[chunks$chunks==i], keep=parsed$keep, extract=chunks$extracts[[i]],
@@ -125,7 +125,7 @@ lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
       results.list <- parallel::parLapplyLB(cluster, unique(chunks$chunks.blocks), function(i) {
         # On selectionne les chunks pour tous les traits de la matrice cor
         # On selectionne les chunks pour tous les traits de la matrice init
-        lassosum(cor=Cor[,chunks$chunks==i],inv_Sb=Inv_Sb,inv_Ss=Inv_Ss ,bfile=Bfile, lambda=Lambda,
+        lassosum(cor=Cor[,chunks$chunks==i],inv_Sb=Inv_Sb[,,chunks$chunks==i],inv_Ss=Inv_Ss ,bfile=Bfile, lambda=Lambda,
                  shrink=Shrink, weights=Weights[,chunks$chunks==i], thr=Thr, init=Init[,chunks$chunks==i],
                  trace=trace-0.5, maxiter=Maxiter,
                  blocks=Blocks[chunks$chunks==i],
