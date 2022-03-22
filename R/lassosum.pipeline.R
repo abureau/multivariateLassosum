@@ -20,10 +20,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' @description The easy way to run lassosum
   #' @param cor A list, each element of cor is a vector of SNP-wise correlations with a phenotype
   #'            derived from summary statistics. Note : the order of phenotypes is important when
-  #'            the user gives cor, chr, etc . They should have the same lenght. If the user doesnt want to give an argument
-  #'            he can just specify NULL for a phenotype.  
-  #' @param phenotypic.genetic.Var.Cov.matrix : matrice variance covariance genetique des phenotypes ( should be semi defini positive)
-  #' @param Var.phenotypic : vecteur de la variance ph?notypic ( on peut parfois supposer == 1) 
+  #'            the user gives cor, chr, etc . The elements of cor, chr, etc. corresponding to the 
+  #'            same phenotype should have the same length. Can be NULL for no phenotype.  
+  #' @param phenotypic.genetic.Var.Cov.matrix : genetic covariance matrix of the phenotypes ( should be semi positive definite)
+  #' @param Var.phenotypic : vector of phenotypic variances ( can be set to 1 if genetic variances are specified as heritabilities) 
   #' @param chr  A list, each element is for a phenotype. Together with \code{pos}, chromosome and position for \code{cor}
   #' @param pos  A list, each element is for a phenotype. Together with \code{chr}, chromosome and position for \code{cor}
   #' @param A1  A list, each element is for a phenotype : Alternative allele (effect allele) for \code{cor}
