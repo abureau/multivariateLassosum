@@ -437,7 +437,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     if (length(dm)==3)
     {
       if (nbr_SNPs != dm[3]) stop("Number of SNP specific genetic covariance matrices does not equal the number of SNPs in common to all traits")
-      inv_Sb = array(apply(phenotypic.genetic.Var.Cov.matrix,3,Rfast::spdinv),c(dm[1],dm[2],nbr_SNPs))
+      inv_Sb = array(apply(phenotypic.genetic.Var.Cov.matrix,3,function(mat) chol2inv(chol(mat))),c(dm[1],dm[2],nbr_SNPs))
     }
     else # length(dm)==2, on copie la même matrice nbr_SNPs fois
     {
