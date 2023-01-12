@@ -41,9 +41,6 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   if(dim(beta)[1] != parsed$p) stop("The number of rows in beta does not match number of selected columns in bfile")
     
     
-  if(is.null(sd)) sd <- sd.bfile(bfile = bfile, keep=parsed$keep, extract=parsed$extract, ...)
-  
-  if(length(sd) != nrow(cor)) stop("Length of sd does not match number of rows in cor")
 
   BETA <- as.vector(t(beta[,1,]))
   r_hat <- as.vector(t(cor))
@@ -61,17 +58,18 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   }
   BETA <- as.matrix(BETA)
   
-  weight <- 1/sd
-  weight[!is.finite(weight)] <- 0
-  
   PRS <- array(rep(NA, parsed$n*nbr_param*nbr_trait),
                dim = c(parsed$n, nbr_param, nbr_trait))
   for(trait in 1:nbr_trait){
       if(destandardize){
+          if(is.null(sd)) sd <- sd.bfile(bfile = bfile, keep=parsed$keep, extract=parsed$extract, ...)
+          if(length(sd) != nrow(cor)) stop("Length of sd does not match number of rows in cor")
+          weight <- 1/sd
+          weight[!is.finite(weight)] <- 0
           scaled_beta <- as.matrix(Diagonal(x = weight) %*% beta[,,trait])
-          PRS[,,trait] <- pgs(Data, keep=keep_sujets, weights = scaled_beta)
+          PRS[,,trait] <- pgs(bfile, keep=keep, weights = scaled_beta)
       }else{
-          PRS[,,trait] <- pgs(Data, keep=keep_sujets, weights = beta[,,trait])
+          PRS[,,trait] <- pgs(bfile, keep=keep, weights = beta[,,trait])
       }
   }
   
