@@ -409,7 +409,7 @@ arma::mat multiBed3sp(const std::string fileName, int N, int P,
 // [[Rcpp::export]]
 
 int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X,
-          const arma::vec& r, const arma ::mat& inv_Sb,const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter,
+          const arma::vec& r, const arma ::cube& inv_Sb,const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter,
           const arma::vec& sample_size)
 {
 
@@ -426,7 +426,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
   
   int n = X.n_rows;
   int p = X.n_cols;
-  int q = inv_Sb.n_cols;
+  int q = inv_Ss.n_cols;
   int pq = p*q;
 
   // avant je comparais r.n_elem avec pq, mais on me donnait warning, donc je compare directement
@@ -485,7 +485,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
         // On d?finit le terme t1 :
 
         for (h =0 ; h<q;h++){
-          if (h!=k) t1=t1+ inv_Sb.at(k,h)*x.at(q*j+h);
+          if (h!=k) t1=t1+ inv_Sb.at(k,h,j)*x.at(q*j+h);
         }
 
         // Rmq quand j'?crivais (-1/2)*t1, on me donnais t1=0 car il consid?re
@@ -517,13 +517,13 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 
         if (A < 0){
           if (A + lambda1*weights(q*j+k) <=0 ) {
-            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*sample_size.at(k)*denom(j)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*sample_size.at(k)*denom(j)+inv_Sb.at(k,k,j));
           }
         }
 
         if (A > 0){
           if (A - lambda1*weights(q*j+k)>= 0){
-            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*sample_size.at(k)*denom(j)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(inv_Ss.at(k,k)*sample_size.at(k)*denom(j)+inv_Sb.at(k,k,j));
           }
         }
 
@@ -534,7 +534,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
         // On remplace ceci vu qu'on travaille avec matrice one phenotype X 
         //yhat += del*X.col(q*j+k);
         
-        arma::vec SS(X.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+        arma::vec SS(X.n_rows*inv_Ss.n_cols,arma::fill::zeros);
         int d = (q*j+k)%q;
         for (int b=0;b< X.n_rows;b++){
           SS.at(q*b+d) = X(b,j)*del;
@@ -573,7 +573,7 @@ int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat
 
 // [[Rcpp::export]]
 
-int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma ::mat& inv_Sb,
+int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma ::cube& inv_Sb,
           const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, 
           int trace, int maxiter,const arma::vec& sample_size)
 {
@@ -616,7 +616,7 @@ int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma 
         // On d?finit le terme t1 :
 
         for (h =0 ; h<q;h++){
-          if (h!=k) t1=t1+ inv_Sb.at(k,h)*x.at(q*j+h);
+          if (h!=k) t1=t1+ inv_Sb.at(k,h,j)*x.at(q*j+h);
         }
 
         t1=-(0.5)*t1;
@@ -631,13 +631,13 @@ int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma 
 
         if (A < 0){
           if (A + lambda1*weights(q*j+k) <=0 ) {
-            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A+ lambda1*weights(q*j+k))/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k,j));
           }
         }
 
         if (A > 0){
           if (A - lambda1*weights(q*j+k)>= 0){
-            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k));
+            x.at(q*j+k) = (A- lambda1*weights(q*j+k))/(sample_size.at(k)*inv_Ss.at(k,k)+inv_Sb.at(k,k,j));
           }
         }
 
@@ -659,11 +659,11 @@ int elnet_s1(double lambda1,const arma::vec& r,int p, int q, int pq, const arma 
 }
 
 // [[Rcpp::export]]
-int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::mat& inv_Sb, arma ::mat& inv_Ss,
+int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::cube& inv_Sb, arma ::mat& inv_Ss,
              arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size,
              arma::Col<int>& startvec, arma::Col<int>& endvec)
 {
-  int q = inv_Sb.n_cols;
+  int q = inv_Ss.n_cols;
   // Repeatedly call elnet by blocks...
   int nreps=startvec.n_elem;
   int out=1;
@@ -673,10 +673,10 @@ int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma
     //arma::vec yhattouse=X.cols(startvec(i)*q, endvec(i)*q+(q-1)) * xtouse;
     // We do this instead now : 
     
-    arma::vec yhattouse(X.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+    arma::vec yhattouse(X.n_rows*inv_Ss.n_cols,arma::fill::zeros);
     int k = 0; 
     for(int j=startvec(i);j<endvec(i)+1;j++){
-      arma::vec S(X.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+      arma::vec S(X.n_rows*inv_Ss.n_cols,arma::fill::zeros);
       for (int l=0;l< X.n_rows;l++){
         arma::mat M = arma::mat(q,q);
         M.fill(X(l,j));
@@ -693,7 +693,7 @@ int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma
                    //X.cols(startvec(i)*q, endvec(i)*q+(q-1)),
                    X.cols(startvec(i), endvec(i)),
                    r.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
-                   inv_Sb,inv_Ss,weights.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
+                   inv_Sb.slices(startvec(i), endvec(i)),inv_Ss,weights.subvec(startvec(i)*q, endvec(i)*q+(q-1)),
                    thr, xtouse,
                    yhattouse, trace - 1, maxiter,sample_size);
     x.subvec(startvec(i)*q, endvec(i)*q+(q-1))=xtouse;
@@ -878,7 +878,7 @@ arma::mat Correlation(arma::mat &genotypes)
 
 
 List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
-              arma::mat& cor, arma ::mat& inv_Sb ,arma ::mat& inv_Ss,int N, int P,
+              arma::mat& cor, arma ::cube& inv_Sb ,arma ::mat& inv_Ss,int N, int P,
               arma::Col<int>& col_skip_pos, arma::Col<int>& col_skip,
               arma::Col<int>& keepbytes, arma::Col<int>& keepoffset, arma::vec& weights,
               double thr, arma::mat& init, int trace, int maxiter,const arma::vec& sample_size,
@@ -928,7 +928,7 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
   int len = r.n_elem;
 
   arma::mat beta(len, lambda.n_elem);
-  arma::mat pred(genotypes.n_rows*inv_Sb.n_cols, lambda.n_elem); pred.zeros();
+  arma::mat pred(genotypes.n_rows*inv_Ss.n_cols, lambda.n_elem); pred.zeros();
   arma::vec out(lambda.n_elem);
   arma::vec loss(lambda.n_elem);
   // On definit diag avec le nombre de SNP car on ne travaille pas avec matrice
@@ -952,7 +952,7 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
   arma::vec fbeta(lambda.n_elem);
   // On initialise le vecteur yhat avec des 0, sinon on obtient des valeurs incorrects
   // de y_hat, et donc de pred
-  arma::vec yhat(genotypes.n_rows*inv_Sb.n_cols,arma::fill::zeros);
+  arma::vec yhat(genotypes.n_rows*inv_Ss.n_cols,arma::fill::zeros);
   //yhat = genotypes * x;
 
 
@@ -965,7 +965,7 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
                startvec, endvec);
     beta.col(i) = x;
     for(j=0; j < beta.n_rows; j++) {
-      int k = j/inv_Sb.n_cols;
+      int k = j/inv_Ss.n_cols;
       if(sd(k) == 0.0) beta(j,i)=beta(j,i) * shrink;
     }
 
@@ -1004,7 +1004,7 @@ List runElnet(arma::vec& lambda, double shrink, const std::string fileName,
 
 
 
-List runElnet_s1(arma::vec& lambda,arma::mat& cor, arma ::mat& inv_Sb ,arma ::mat& inv_Ss, arma::vec& weights,
+List runElnet_s1(arma::vec& lambda,arma::mat& cor, arma ::cube& inv_Sb ,arma ::mat& inv_Ss, arma::vec& weights,
               double thr, arma::mat& init, int trace, int maxiter,const arma::vec& sample_size) {
 
 

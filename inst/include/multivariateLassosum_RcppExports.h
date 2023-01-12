@@ -88,11 +88,11 @@ namespace multivariateLassosum {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X, const arma::vec& r, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size) {
+    inline int elnet(double lambda1, double lambda2, const arma::vec& diag, const arma::mat& X, const arma::vec& r, const arma ::cube& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size) {
         typedef SEXP(*Ptr_elnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_elnet p_elnet = NULL;
         if (p_elnet == NULL) {
-            validateSignature("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
+            validateSignature("int(*elnet)(double,double,const arma::vec&,const arma::mat&,const arma::vec&,const arma ::cube&,const arma ::mat&,const arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&)");
             p_elnet = (Ptr_elnet)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_elnet");
         }
         RObject rcpp_result_gen;
@@ -109,11 +109,11 @@ namespace multivariateLassosum {
         return Rcpp::as<int >(rcpp_result_gen);
     }
 
-    inline int elnet_s1(double lambda1, const arma::vec& r, int p, int q, int pq, const arma ::mat& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, int trace, int maxiter, const arma::vec& sample_size) {
+    inline int elnet_s1(double lambda1, const arma::vec& r, int p, int q, int pq, const arma ::cube& inv_Sb, const arma ::mat& inv_Ss, const arma::vec& weights, double thr, arma::vec& x, int trace, int maxiter, const arma::vec& sample_size) {
         typedef SEXP(*Ptr_elnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_elnet_s1 p_elnet_s1 = NULL;
         if (p_elnet_s1 == NULL) {
-            validateSignature("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::mat&,const arma ::mat&,const arma::vec&,double,arma::vec&,int,int,const arma::vec&)");
+            validateSignature("int(*elnet_s1)(double,const arma::vec&,int,int,int,const arma ::cube&,const arma ::mat&,const arma::vec&,double,arma::vec&,int,int,const arma::vec&)");
             p_elnet_s1 = (Ptr_elnet_s1)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_elnet_s1");
         }
         RObject rcpp_result_gen;
@@ -130,11 +130,11 @@ namespace multivariateLassosum {
         return Rcpp::as<int >(rcpp_result_gen);
     }
 
-    inline int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::mat& inv_Sb, arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec) {
+    inline int repelnet(double lambda1, double lambda2, arma::vec& diag, arma::mat& X, arma::vec& r, arma ::cube& inv_Sb, arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::vec& x, arma::vec& yhat, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec) {
         typedef SEXP(*Ptr_repelnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_repelnet p_repelnet = NULL;
         if (p_repelnet == NULL) {
-            validateSignature("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::mat&,arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
+            validateSignature("int(*repelnet)(double,double,arma::vec&,arma::mat&,arma::vec&,arma ::cube&,arma ::mat&,arma::vec&,double,arma::vec&,arma::vec&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
             p_repelnet = (Ptr_repelnet)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_repelnet");
         }
         RObject rcpp_result_gen;
@@ -214,11 +214,11 @@ namespace multivariateLassosum {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline List runElnet(arma::vec& lambda, double shrink, const std::string fileName, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, int N, int P, arma::Col<int>& col_skip_pos, arma::Col<int>& col_skip, arma::Col<int>& keepbytes, arma::Col<int>& keepoffset, arma::vec& weights, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec) {
+    inline List runElnet(arma::vec& lambda, double shrink, const std::string fileName, arma::mat& cor, arma ::cube& inv_Sb, arma ::mat& inv_Ss, int N, int P, arma::Col<int>& col_skip_pos, arma::Col<int>& col_skip, arma::Col<int>& keepbytes, arma::Col<int>& keepoffset, arma::vec& weights, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size, arma::Col<int>& startvec, arma::Col<int>& endvec) {
         typedef SEXP(*Ptr_runElnet)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_runElnet p_runElnet = NULL;
         if (p_runElnet == NULL) {
-            validateSignature("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::mat&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::vec&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
+            validateSignature("List(*runElnet)(arma::vec&,double,const std::string,arma::mat&,arma ::cube&,arma ::mat&,int,int,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::Col<int>&,arma::vec&,double,arma::mat&,int,int,const arma::vec&,arma::Col<int>&,arma::Col<int>&)");
             p_runElnet = (Ptr_runElnet)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_runElnet");
         }
         RObject rcpp_result_gen;
@@ -235,11 +235,11 @@ namespace multivariateLassosum {
         return Rcpp::as<List >(rcpp_result_gen);
     }
 
-    inline List runElnet_s1(arma::vec& lambda, arma::mat& cor, arma ::mat& inv_Sb, arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size) {
+    inline List runElnet_s1(arma::vec& lambda, arma::mat& cor, arma ::cube& inv_Sb, arma ::mat& inv_Ss, arma::vec& weights, double thr, arma::mat& init, int trace, int maxiter, const arma::vec& sample_size) {
         typedef SEXP(*Ptr_runElnet_s1)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_runElnet_s1 p_runElnet_s1 = NULL;
         if (p_runElnet_s1 == NULL) {
-            validateSignature("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::mat&,arma ::mat&,arma::vec&,double,arma::mat&,int,int,const arma::vec&)");
+            validateSignature("List(*runElnet_s1)(arma::vec&,arma::mat&,arma ::cube&,arma ::mat&,arma::vec&,double,arma::mat&,int,int,const arma::vec&)");
             p_runElnet_s1 = (Ptr_runElnet_s1)R_GetCCallable("multivariateLassosum", "_multivariateLassosum_runElnet_s1");
         }
         RObject rcpp_result_gen;

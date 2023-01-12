@@ -20,10 +20,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #' @description The easy way to run lassosum
   #' @param cor A list, each element of cor is a vector of SNP-wise correlations with a phenotype
   #'            derived from summary statistics. Note : the order of phenotypes is important when
-  #'            the user gives cor, chr, etc . They should have the same lenght. If the user doesnt want to give an argument
-  #'            he can just specify NULL for a phenotype.  
-  #' @param phenotypic.genetic.Var.Cov.matrix : matrice variance covariance genetique des phenotypes ( should be semi defini positive)
-  #' @param Var.phenotypic : vecteur de la variance ph?notypic ( on peut parfois supposer == 1) 
+  #'            the user gives cor, chr, etc . The elements of cor, chr, etc. corresponding to the 
+  #'            same phenotype should have the same length. Can be NULL for no phenotype.  
+  #' @param phenotypic.genetic.Var.Cov.matrix : genetic covariance matrix of the phenotypes ( should be semi positive definite)
+  #' @param Var.phenotypic : vector of phenotypic variances ( can be set to 1 if genetic variances are specified as heritabilities) 
   #' @param chr  A list, each element is for a phenotype. Together with \code{pos}, chromosome and position for \code{cor}
   #' @param pos  A list, each element is for a phenotype. Together with \code{chr}, chromosome and position for \code{cor}
   #' @param A1  A list, each element is for a phenotype : Alternative allele (effect allele) for \code{cor}
@@ -210,12 +210,18 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   
   # I have to add explanatory messages here 
   stopifnot(length(Var.phenotypic)==length(cor))
-  stopifnot(nrow(phenotypic.genetic.Var.Cov.matrix)==ncol(phenotypic.genetic.Var.Cov.matrix))
-  stopifnot(nrow(phenotypic.genetic.Var.Cov.matrix)==length(Var.phenotypic))
+  dm = dim(phenotypic.genetic.Var.Cov.matrix)
+  stopifnot("phenotypic.genetic.Var.Cov.matrix is not square"=dm[1]==dm[2])
+  stopifnot("Dimension of phenotypic.genetic.Var.Cov.matrix does not equal the number of phenotypes"=dm[1]==length(Var.phenotypic))
   
   # On teste si la matrice est semi d?finie positive
-  matrixcalc::is.positive.semi.definite(phenotypic.genetic.Var.Cov.matrix, tol = 1e-8)
-  # Add error message here 
+  if (length(dm)==3)
+  {
+    psd = all(apply(phenotypic.genetic.Var.Cov.matrix,3,matrixcalc::is.positive.semi.definite))
+  }
+  else # length(dm)==2
+    psd = matrixcalc::is.positive.semi.definite(phenotypic.genetic.Var.Cov.matrix, tol = 1e-8)
+  stopifnot("At least one phenotypic.genetic.Var.Cov.matrix is negative definite"=psd) 
   
   possible.LDblocks <- c("EUR.hg19", "AFR.hg19", "ASN.hg19",
                          "EUR.hg38", "AFR.hg38", "ASN.hg38")
@@ -412,19 +418,47 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     ref.extract <- rep(FALSE, nrow(ref.bim))
     ref.extract[m.ref$ref.extract][m.common$order] <- TRUE
 
-  
-  # On construit les matrice Inv_Ss et Inv_Sb pour les SNPs commun aux 
-  # 3 jeux ( summary statistics, panel de ref et jeu de test)
-  
-  nbr_SNPs <- sum(ref.extract)
-  Sigma_b <- phenotypic.genetic.Var.Cov.matrix/nbr_SNPs
-  inv_Sb <- matlib::inv(Sigma_b)
+    # code to adapt corr3 for SNPs commun to all summary 
+    # statistics and test data set only
+    
+    for (j in 1:length(cor)){
+      ss.j.commun <- get(paste0("ss.",j,".commun"))
+      ss3.j.commun <- ss.j.commun[m.test$order,]
+      ss3.j.commun$cor <- ss3.j.commun$cor * m.test$rev
+      ss3.j.commun$A1 <- test.bim$V5[m.test$ref.extract]
+      ss3.j.commun$A2 <- test.bim$V6[m.test$ref.extract]
+      ss3.j.commun$order <- m.test$order
+      assign(x = paste0("ss3.",j,".commun"),value = ss3.j.commun )
+    }
+    # On construit la matrice Inv_Sb pour les SNPs commun aux 
+    # 2 jeux ( summary statistics et jeu de test)
 
-  # On construit la matrice Sigma_S :
+    nbr_SNPs <- nrow(ss3.1.commun)
+    if (length(dm)==3)
+    {
+      if (nbr_SNPs != dm[3]) stop("Number of SNP specific genetic covariance matrices does not equal the number of SNPs in common to all traits")
+      inv_Sb = array(apply(phenotypic.genetic.Var.Cov.matrix,3,function(mat) chol2inv(chol(mat))),c(dm[1],dm[2],nbr_SNPs))
+    }
+    else # length(dm)==2, on copie la même matrice nbr_SNPs fois
+    {
+      Sigma_b <- phenotypic.genetic.Var.Cov.matrix/nbr_SNPs
+      inv_Sb <- array(Rfast::spdinv(Sigma_b),c(dm[1],dm[2],nbr_SNPs))
+    }
+    
+  # On construit la matrice inv_Ss  :
   
-  Var.environmental = Var.phenotypic - diag(phenotypic.genetic.Var.Cov.matrix)
-  Sigma_s <- diag(x = Var.environmental)
-  inv_Ss <- matlib::inv(Sigma_s)
+  if (length(dm)==3) # Soustraire la somme des covariances génétiques de tous les SNPs
+  {
+    #Var.genetic = apply(apply(phenotypic.genetic.Var.Cov.matrix,3,diag),2,sum)
+    # Sommer d'abord évite le double apply
+    Var.genetic = diag(apply(phenotypic.genetic.Var.Cov.matrix,1:2,sum))
+  }
+  else # length(dm)==2
+    Var.genetic = diag(phenotypic.genetic.Var.Cov.matrix)
+    
+  if (any(Var.phenotypic < Var.genetic)) stop("The genetic variance of at least on trait exceeds the phenotypic variance.")
+  Var.environmental = Var.phenotypic - Var.genetic
+  inv_Ss  <- diag(x = 1/Var.environmental)
 
 
   ### Split data by ld region ###
@@ -456,14 +490,15 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     cor2[k,] <- get(paste0("cor2.",j))
     w2[k,] <- get(paste0("w2.",j))
     k <- k+1 
-    }
+  }
+  inv_Sb2 = inv_Sb[,,sort(m.common$order)]
   ls <- list()
   if(length(s.minus.1) > 0) {
     if(trace) cat("Running lassosum ...\n")
     ls <- lapply(s.minus.1, function(s) {
       if(trace) cat("s = ", s, "\n")
       #Adapt? aux poids - OK.
-      lassosum(cor=cor2,inv_Sb, inv_Ss, bfile=ref.bfile,
+      lassosum(cor=cor2,inv_Sb2, inv_Ss, bfile=ref.bfile,
                    shrink=s, extract=ref.extract, lambda=lambda,
                    blocks = LDblocks, trace=trace-1, weights=w2,
                    keep=parsed.ref$keep, cluster=cluster,sample_size = sample_size, ...)
@@ -472,48 +507,28 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     name <- colnames(ls[[1]][[2]])
   }
 
-  # I have to add code here to adapt corr3 for SNPs commun to all summary 
-  # statistics and test data set only
-  
-  for (j in 1:length(cor)){
-    ss.j.commun <- get(paste0("ss.",j,".commun"))
-    ss3.j.commun <- ss.j.commun[m.test$order,]
-    ss3.j.commun$cor <- ss3.j.commun$cor * m.test$rev
-    ss3.j.commun$A1 <- test.bim$V5[m.test$ref.extract]
-    ss3.j.commun$A2 <- test.bim$V6[m.test$ref.extract]
-    ss3.j.commun$order <- m.test$order
-    assign(x = paste0("ss3.",j,".commun"),value = ss3.j.commun )
-  }
-  #poids ajout?s
-  cor3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
-  w3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
-  k <- 1
-  for (j in 1:length(cor)){
-      ss3.j.commun <- get(paste0("ss3.",j,".commun"))
-      assign(x = paste0("cor3.",j),value = ss3.j.commun$cor )
-      assign(x = paste0("w3.",j),value = ss3.j.commun$weigths )
-      cor3[k,] <- get(paste0("cor3.",j))
-      w3[k,] <- get(paste0("w3.",j))
-      k <- k+1 
-  }
-  
    if(any(s == 1)) {
        
-        # On construit la matrice Inv_Sb pour les SNPs commun aux 
-        # 2 jeux ( summary statistics et jeu de test)
-       # Je reconstruis la matrice sigma_b car le nombre de snps 
-       # est diff?rent ici ( on travaille avec les snps communs
-       # au summary statistics et le jeu de test seulement)
-  
-     nbr_SNPs <- nrow(ss3.1.commun)
-     Sigma_b <- phenotypic.genetic.Var.Cov.matrix/nbr_SNPs
-     inv_Sb <- matlib::inv(Sigma_b)
+     #poids ajout?s
+     cor3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
+     w3 <- matrix(data = NA,nrow = length(cor),ncol = nrow(ss3.1.commun))
+     k <- 1
+     for (j in 1:length(cor)){
+       ss3.j.commun <- get(paste0("ss3.",j,".commun"))
+       assign(x = paste0("cor3.",j),value = ss3.j.commun$cor )
+       assign(x = paste0("w3.",j),value = ss3.j.commun$weigths )
+       cor3[k,] <- get(paste0("cor3.",j))
+       w3[k,] <- get(paste0("w3.",j))
+       k <- k+1 
+     }
+     inv_Sb3 = inv_Sb[,,sort(m.test$order)]
+     
      
      if(trace) cat("Running lassosum with s=1...\n")
      # J'ai adapt? la fonction indeplasso au cas multivariate
      #Adapt?s aux poids - indeplasso - OK!
      #Adapt?s aux poids - runElnet_s1 - NON!
-       il <- indeplasso(cor = cor3,inv_Sb,inv_Ss,lambda,sample_size, weigths = w3)
+       il <- indeplasso(cor = cor3,inv_Sb3,inv_Ss,lambda,sample_size, weigths = w3)
    } else {
        il <- list(beta=matrix(0, nrow=length(m.test$order), ncol=length(cor)*length(lambda)))
    }
