@@ -69,9 +69,9 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   for(trait in 1:nbr_trait){
       if(destandardize){
           scaled_beta <- as.matrix(Diagonal(x = weight) %*% beta[,,trait])
-          PRS[,,trait] <- pgs(Data, keep=keep_sujets, weights = scaled_beta)
+          PRS[,,trait] <- pgs(Data, keep=keep, weights = scaled_beta)
       }else{
-          PRS[,,trait] <- pgs(Data, keep=keep_sujets, weights = beta[,,trait])
+          PRS[,,trait] <- pgs(Data, keep=keep, weights = beta[,,trait])
       }
   }
   
