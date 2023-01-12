@@ -31,21 +31,19 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   if(any(abs(cor) > 1)) warning("Some abs(cor) > 1")
   if(any(abs(cor) == 1)) warning("Some abs(cor) == 1")
 
-  beta <- as.matrix(beta)
+  #beta <- as.matrix(beta)
   stopifnot(!any(is.na(beta)))
-  if(length(cor) != nrow(beta)) stop("Length of cor does not match number of rows in beta")
-  
+  if(any(dim(cor) != dim(beta)[c(1,3)])) stop("Dimensions of cor do not correspond in beta")
   nbr_trait <- dim(beta)[3]
   nbr_param <- dim(beta)[2]
-  parsed <- parseselect(bfile, extract=extract, exclude = exclude, 
-                        keep=keep, remove=remove, 
-                        chr=chr)
+  
+  parsed <- parseselect(bfile, keep=keep, extract=extract, exclude = exclude, remove=remove, chr=chr)
   if(dim(beta)[1] != parsed$p) stop("The number of rows in beta does not match number of selected columns in bfile")
+    
+    
+  if(is.null(sd)) sd <- sd.bfile(bfile = bfile, keep=parsed$keep, extract=parsed$extract, ...)
   
-  
-  if(is.null(sd)) sd <- sd.bfile(bfile = bfile, 
-                                 keep=parsed$keep, extract=parsed$extract, ...)
-  stopifnot(length(sd) == length(cor))
+  if(length(sd) != nrow(cor)) stop("Length of sd does not match number of rows in cor")
 
   BETA <- as.vector(t(beta[,1,]))
   r_hat <- as.vector(t(cor))
@@ -81,9 +79,9 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   for(param in 1:nbr_param){
       PRED[,param] <- as.vector(t(PRS[,param,]))
   }
-  pred2 <- scale(pred, scale=F)
+  pred2 <- scale(PRED, scale=F)
   bXXb <- colSums(pred2^2) / parsed$n
-  bXy <- cor %*% beta 
+  bXy <- r_hat %*% BETA 
   
   result <- as.vector(bXy / sqrt(bXXb))
   attr(result, "bXXb") <- bXXb
