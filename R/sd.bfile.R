@@ -42,7 +42,25 @@ sd.bfile <- function(bfile, keep=NULL, remove=NULL, extract=NULL, exclude=NULL,
   parsed <- parseselect(bfile, extract=extract, exclude = exclude, 
                         keep=keep, remove=remove, 
                         chr=chr)
-  return(lassosum(cor = rep(0.0, parsed$p), bfile = bfile, lambda=numeric(0), 
-                  shrink=1, keep=parsed$keep, extract=parsed$extract, 
-                  blocks=1:parsed$p, ...)$sd)
+  
+  installed <- installed.packages()[,1]
+  if(("lassosum" %in% installed)){
+    #Simulating the use of lassosum function on 1 phenotype to get the sd vector.
+    return(lassosum:::lassosum(cor = rep(0.0, parsed$p), bfile = bfile, lambda=numeric(0), 
+                               shrink=1, keep=parsed$keep, extract=parsed$extract, 
+                               blocks=1:parsed$p, ...)$sd
+           )
+  }else{
+    cat("Computing SNP-wise standard deviations using multivariateLassosum will be much longer...\n")
+    cat("Please install the univariate lassosum package by Mak et al (2017) from CRAN or Github to use a faster version.\n")
+    #Simulating the use of multivariateLassosum function on 2 phenotypes to get the sd vector.
+    return(lassosum(cor = rbind(rep(0.0, parsed$p), rep(0.0, parsed$p)),
+                    bfile = bfile,
+                    inv_Sb = array(data = rep(0.0, parsed$p*4), dim = c(2,2, parsed$p)),
+                    inv_Ss = matrix(data = rep(0.0, 4), nrow = 2, ncol = 2),
+                    lambda = numeric(0), 
+                    shrink = 1, keep = parsed$keep, extract = parsed$extract, 
+                    blocks = 1:parsed$p, ...)$sd
+           )
+  }
 }
