@@ -29,7 +29,7 @@ pseudovalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
     stop("Pseudovalidation requires fdrtool. Please install from CRAN.")
   
   stopifnot(class(ls.pipeline) == "lassosum.pipeline")
-
+  
   results <- list(lambda=ls.pipeline$lambda, s=ls.pipeline$s)
   
   if(!is.null(keep) || !is.null(remove)) if(is.null(test.bfile))
@@ -43,12 +43,16 @@ pseudovalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   }
   
   if(destandardize) {
-    if(ls.pipeline$destandardized) stop("beta in ls.pipeline already destandardized.")
+    if(ls.pipeline$destandardized){
+      stop("beta in ls.pipeline already destandardized.")
+    } else {
+      if(trace) cat("Computing SNP-wise standard deviations from test data and destandardizing beta in ls.pipeline...\n")
+    }
     sd <- sd.bfile(test.bfile, extract=ls.pipeline$test.extract, 
                    keep=keep, remove=remove, trace=trace, ...)
     sd[sd <= 0] <- Inf # Do not want infinite beta's!
     ls.pipeline$beta <- lapply(ls.pipeline$beta, 
-                   function(x) as.matrix(Matrix::Diagonal(x=1/sd) %*% x))
+                               function(x) as.matrix(Matrix::Diagonal(x=1/sd) %*% x))
     recal <- T
   }
   
@@ -56,20 +60,24 @@ pseudovalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   recal <- !identical(ls.pipeline$test.bfile, test.bfile) || 
     !identical(parsed.test$keep, ls.pipeline$keep.test)
   
+  cor.list <- lapply(ls.pipeline$sumstats, '[', "cor")
+  cor <- data.frame(lapply(cor.list, unlist))
+  
   if(rematch) {
     if(trace) cat("Coordinating lassosum output with test data...\n")
     
     if(length(test.bfile) > 1) stop("Multiple 'test.bfile's not supported here.")
     bim <- fread(paste0(test.bfile, ".bim"))
     bim$V1 <- as.character(sub("^chr", "", bim$V1, ignore.case = T))
-    
-    m <- matchpos(ls.pipeline$sumstats, bim, auto.detect.ref = F, 
+    #As sumstats between phenotypes are sorted in lassosum.pipeline, we sort based on the first phenotype.
+    m <- matchpos(ls.pipeline$sumstats[[1]], bim, auto.detect.ref = F, 
                   ref.chr = "V1", ref.snp="V2", ref.pos="V4", ref.alt="V5", ref.ref="V6", 
                   rm.duplicates = T, exclude.ambiguous = exclude.ambiguous, 
                   silent=T)
     
     beta <- lapply(ls.pipeline$beta, function(x) 
       as.matrix(Matrix::Diagonal(x=m$rev) %*% x[m$order, ]))
+    cor <- cor[m$order, ] * m$rev
     if(trace) cat("Calculating PGS...\n")
     toextract <- m$ref.extract
     pgs <- lapply(beta, function(x) pgs(bfile=test.bfile, weights = x, 
@@ -93,48 +101,58 @@ pseudovalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
                                                       trace=trace-1))
       names(pgs) <- as.character(ls.pipeline$s)
       results <- c(results, list(pgs=pgs))
-    # } else if(is.null(parsed.test$keep)) {
+      # } else if(is.null(parsed.test$keep)) {
     } else  {
       results <- c(results, list(pgs=ls.pipeline$pgs))
-    # } else {
-    #   pgs <- ls.pipeline$pgs
-    #   for(i in 1:length(pgs)) {
-    #     pgs[[i]] <- pgs[[i]][parsed.test$keep, ]
-    #   }
-    #   results <- c(results, list(pgs=pgs))
+      # } else {
+      #   pgs <- ls.pipeline$pgs
+      #   for(i in 1:length(pgs)) {
+      #     pgs[[i]] <- pgs[[i]][parsed.test$keep, ]
+      #   }
+      #   results <- c(results, list(pgs=pgs))
     }
     beta <- ls.pipeline$beta
   } 
   
   ### Pseudovalidation ###
-  lambdas <- rep(ls.pipeline$lambda, length(ls.pipeline$s))
-  ss <- rep(ls.pipeline$s, rep(length(ls.pipeline$lambda), length(ls.pipeline$s)))
+  len.s <- length(ls.pipeline$s)
+  len.lambda <- length(ls.pipeline$lambda)
+  len.param <- len.s*len.lambda
+  len.trait <- length(ls.pipeline$sumstats)
+  lambdas <- rep(ls.pipeline$lambda, len.s)
+  ss <- rep(ls.pipeline$s, rep(len.lambda, len.s))
   PGS <- do.call("cbind", results$pgs)
-  BETA <- do.call("cbind", ls.pipeline$beta)
+  BETA <- do.call("cbind", beta)
   
   if(trace) cat("Estimating local fdr ...\n")
-  fdr <- fdrtool::fdrtool(ls.pipeline$sumstats$cor, statistic="correlation", 
-                          plot=F)
-  cor.shrunk <- ls.pipeline$sumstats$cor * (1 - fdr$lfdr)
+  fdr <- apply(cor, 2, function(x) fdrtool::fdrtool(x, statistic="correlation", plot=F, verbose=F))
+  cor.shrunk <- as.matrix(cor * (1-data.frame(lapply(fdr, '[', "lfdr"))))
+  
+  arrayBeta <- array(numeric(), dim = c(nrow(BETA), len.param, len.trait))
+  for(trait in 1:len.trait){
+    arrayBeta[,,trait] <- BETA[,seq(from = trait, to = (len.param*2), by = 2)]
+  }
   if(trace) cat("Performing pseudovalidation ...\n")
   pv <- pseudovalidation(test.bfile, 
-                         beta=BETA, 
+                         beta=arrayBeta, 
                          cor=cor.shrunk, 
                          extract=toextract, 
                          keep=keep, remove=remove,
-                         sd=ls.pipeline$sd, 
+                         destandardize = FALSE,
+                         sd=NULL, 
                          cluster=cluster, ...)
-
+  
   pv[is.na(pv)] <- -Inf
   best <- which(pv == max(pv))[1]
+  best.idx <- c((best*2)-1, best*2)
   best.s <- ss[best]
   best.lambda <- lambdas[best]
-  best.pgs <- PGS[,best]
-  len.lambda <- length(ls.pipeline$lambda)
+  best.pgs <- PGS[,best.idx]
   best.beta.s <- ceiling(best / len.lambda)
   best.beta.lambda <- best %% len.lambda
   best.beta.lambda[best.beta.lambda == 0] <- len.lambda
-  best.beta <- beta[[best.beta.s]][,best.beta.lambda]
+  best.beta.lambda.idx <- c((best.beta.lambda*2)-1, best.beta.lambda*2)
+  best.beta <- beta[[best.beta.s]][,best.beta.lambda.idx]
   
   validation.table <- data.frame(lambda=lambdas, s=ss, value=pv)
   results <- c(results, list(best.s=best.s, 
@@ -144,8 +162,5 @@ pseudovalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
                              validation.table=validation.table, 
                              validation.type="pseudovalidation"))
   class(results) <- "validate.lassosum"
-  if(plot) plot(results)
-  return(results)
-  
 }
 
