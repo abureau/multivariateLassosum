@@ -20,6 +20,7 @@ Suggests:
     devtools, 
     fdrtool,
     knitr,
-    rmarkdown
+    rmarkdown,
+    ggplot2
 RoxygenNote: 7.1.1
 Encoding: UTF-8
