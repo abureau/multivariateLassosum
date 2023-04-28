@@ -20,7 +20,7 @@ matchpos <- function(tomatch, ref.df,
 
   tomatch <- data.table::as.data.table(tomatch)
   ref.df <- data.table::as.data.table(ref.df)
-    
+  
   #### Column matching function ####
   match.col <- function(test, target, default.targets, auto.detect=T, silent=F) {
     mustfind <- target != ""
@@ -129,6 +129,14 @@ matchpos <- function(tomatch, ref.df,
   tomatch$.index.tomatch <- 1:nrow(tomatch)
   ref.df$.index.ref <- 1:nrow(ref.df)
 
+  #### A common problem emerges when chr is a string in one data.table and an integer in the other.
+  #### Let's assume that everything is a string and generate an error if values are different.
+  tomatch <- tomatch[, colnames.tomatch[chr.col]:=as.character(get(colnames.tomatch[chr.col]))]
+  ref.df <- ref.df[, colnames.ref[ref.chr.col]:=as.character(get(colnames.ref[ref.chr.col]))]
+  unique.chr.tomatch <- unique(tomatch[,get(colnames.tomatch[chr.col])])
+  unique.chr.ref <- unique(ref.df[,get(colnames.ref[ref.chr.col])])
+  if(!all(unique.chr.tomatch %in% unique.chr.ref)) stop("Chromosomes aren't the same between the sets...")
+  
   #### MERGE ####
   merged <- merge(ref.df, tomatch, all=F, 
                   by.x=ref.match.cols.names, by.y=match.cols.names)
