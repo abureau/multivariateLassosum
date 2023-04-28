@@ -78,6 +78,7 @@ validate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
     if(length(test.bfile) > 1) stop("Multiple 'test.bfile's not supported here.")
     #As beta's between phenotypes are sorted in lassosum.pipeline, we sort based on the first phenotype.
     bim <- fread(paste0(test.bfile, ".bim"))
+    bim$V1 <- as.character(sub("^chr", "", bim$V1, ignore.case = T))
     m <- matchpos(ls.pipeline$sumstats[[1]], bim, auto.detect.ref = F, 
                   ref.chr = "V1", ref.snp="V2", ref.pos="V4", ref.alt="V5", ref.ref="V6", 
                   rm.duplicates = T, exclude.ambiguous = exclude.ambiguous, 

@@ -122,6 +122,7 @@ sumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL
   #Correlation are refered to as `ss` because of their format here.
   for (j in 1:len.pheno.cor){
     ss <- list(chr=chr[[j]], pos=pos[[j]], A1=A1[[j]], A2=A2[[j]], cor=cor[[j]])
+    ss$chr <- as.character(sub("^chr", "", ss$chr, ignore.case = T))
     ss[sapply(ss, is.null)] <- NULL
     ss <- as.data.frame(ss)
     assign(x = paste0("ss.", j), value = ss)
@@ -200,6 +201,7 @@ sumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL
   bim.beta <- bim[toextract,]
   
   #matching between matched phenotypes correlations and test bfile (and sumstats at the same time)
+  bim.beta$V1 <- as.character(sub("^chr", "", bim.beta$V1, ignore.case = T))
   m.ss.bim <- matchpos(tomatch = ss.1.commun, ref.df = bim.beta, auto.detect.ref = F, 
                        ref.chr = "V1", ref.snp="V2", ref.pos="V4", ref.alt="V5", ref.ref="V6", 
                        rm.duplicates = T, exclude.ambiguous = exclude.ambiguous, 
