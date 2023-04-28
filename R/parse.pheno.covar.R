@@ -83,7 +83,7 @@ parse.pheno.covar <- function(pheno, covar, parsed, trace=0) {
   } else {
     names.fam <- rownames(fam)
   }
-  pheno <- Pheno[names.fam]
+  pheno <- Pheno[names.fam,]
   if(trace) {
     message(nrow(pheno), " out of ", nrow(Pheno), " samples kept in pheno.")
   }
