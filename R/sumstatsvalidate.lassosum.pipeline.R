@@ -1,4 +1,4 @@
-sumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL, 
+zsumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL, 
                                        chr=NULL, pos=NULL, A1=NULL, A2=NULL,
                                        keep=NULL, remove=NULL, 
                                        trace=1, 
@@ -54,7 +54,6 @@ sumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL
   
   stopifnot(class(ls.pipeline) == "lassosum.pipeline")
   if(length(test.bfile) > 1) stop("Multiple 'test.bfile's not supported here.")
-
   if(!is.list(cor)){
     cor <- list(cor); message("The argument cor was transformed into a list")
   } 
