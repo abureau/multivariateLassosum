@@ -10,11 +10,14 @@ splitvalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   #' @param test.bfile The (\href{https://www.cog-genomics.org/plink2/formats#bed}{PLINK bfile} for the test dataset 
   #' @param keep Participants to keep (see \code{\link{lassosum}} for more details)
   #' @param remove Participants to remove
-  #' @param pheno A vector of phenotype OR a \code{data.frame} with 3 columns, the first 2 columns being headed "FID" and "IID", OR a filename for such a data.frame
+  #' @param pheno A \code{data.frame} providing family and individual IDs followed by the phenotypes. The first 2 columns are headed "FID" and "IID".
+  #'              Be careful to previously provide the phenotypes in the same order as provided to lassosum.pipeline
   #' @param covar A matrix of covariates OR a \code{data.frame} with 3 or more columns, the first 2 columns being headed "FID" and "IID", OR a filename for such a data.frame
   #' @param trace Controls amount of output
+  #' @param split A vector of values 1 and 2 specifying which subjects are part of the first and the second split of the test data.
+  #'              if NULL, test data is randomly split in half
   #' @param rematch Forces a rematching of the ls.pipline beta's with the new .bim file
-  #' @param ... parameters to pass to \code{\link{validate.lassosum.pipeline}}
+  #' @param ... parameters to pass to \code{\link{validate.lassosum.pipeline}}. For example, destandardize or validate.function
   #' @details Performs split-validation. Randomly split the test data into half for validation 
   #' and half for prediction. Standardize the best cross-predicted pgs and stack together. 
   #' @rdname splitvalidate
@@ -40,9 +43,7 @@ splitvalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   parsed.test <- phcovar$parsed
   pheno <- phcovar$pheno
   covar <- phcovar$covar
-  # recal <- !identical(ls.pipeline$test.bfile, test.bfile) || 
-  #   !identical(parsed.test$keep, ls.pipeline$keep.test)
-  
+
   ### Split ###
   if(is.null(split)) {
     split <- sample(1:parsed.test$n %% 2 + 1)
@@ -61,16 +62,20 @@ splitvalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   for(s in 1:2) {
     if(is.null(parsed.test$keep)) {
       keep <- split == s
-      pheno2 <- pheno[keep]
-      covar2 <- if(!is.null(covar)) covar[keep,] else NULL
+      pheno2 <- pheno[keep,]
+      covar2 <- if(!is.null(covar)){covar[keep,]} else {NULL}
     } else {
       keep <- parsed.test$keep
       keeps <- split == s
       keep[keep] <- keeps
-      pheno2 <- pheno[keeps]
-      covar2 <- if(!is.null(covar)) covar[keeps,] else NULL
+      pheno2 <- pheno[keeps,]
+      covar2 <- if(!is.null(covar)){covar[keeps,]} else {NULL}
     }
     if(trace) cat(paste0("Split ", s, ":\n")) 
+    FID.IID <- strsplit(rownames(pheno2), "_", fixed = TRUE)
+    FID <- sapply(FID.IID, head, 1)
+    IID <- sapply(FID.IID, tail, 1)
+    pheno2 <- data.frame("FID" = FID, "IID" = IID, pheno2)
     v <- validate(ls.pipeline, keep=keep, pheno=pheno2, covar=covar2, 
                   test.bfile=test.bfile, trace=trace, rematch=rematch, ...)
     best.s <- c(best.s, v$best.s)
@@ -82,7 +87,9 @@ splitvalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
   }
   S <- v$s; L <- v$lambda
   for(s in 1:2) {
-    best.pgs[split == 3-s] <- PGS[[3-s]][[which(S == best.s[s])]][,L == best.lambda[s]]
+    best.lambda.s <- which(L == best.lambda[s])
+    best.lambda.s <- c((best.lambda.s*2)-1, best.lambda.s*2)
+    best.pgs[split == 3-s,] <- scale(PGS[[3-s]][[which(S == best.s[s])]][,best.lambda.s])
   }
 
   #### Results table ####
@@ -95,11 +102,11 @@ splitvalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
     results.table$best.pgs <- best.pgs
   } else {
     results.table <- phcovar$table
-    results.table$best.pgs <- best.pgs[results.table$order]
+    results.table$best.pgs <- best.pgs[results.table$order,]
     results.table$split <- split[results.table$order]
   }
   
-    
+
   results <- c(results, list(split=split,
                              best.s=best.s, 
                              best.lambda=best.lambda,
