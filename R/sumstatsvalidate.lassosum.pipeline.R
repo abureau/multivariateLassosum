@@ -252,14 +252,14 @@ sumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL
   
   pv[is.na(pv)] <- -Inf
   best <- which(pv == max(pv))[1]
-  best.idx <- c((best*2)-1, best*2)
+  best.idx <- seq(from = (best*len.trait)-(len.trait-1), to =best*len.trait)
   best.s <- ss[best]
   best.lambda <- lambdas[best]
   best.pgs <- PGS[,best.idx]
   best.beta.s <- ceiling(best / len.lambda)
   best.beta.lambda <- best %% len.lambda
   best.beta.lambda[best.beta.lambda == 0] <- len.lambda
-  best.beta.lambda.idx <- c((best.beta.lambda*2)-1, best.beta.lambda*2)
+  best.beta.lambda.idx <- seq(from = (best.beta.lambda*len.trait)-(len.trait-1), to =best.beta.lambda*len.trait)
   best.beta <- beta[[best.beta.s]][,best.beta.lambda.idx]
   
   validation.table <- data.frame(lambda=lambdas, s=ss, value=pv)

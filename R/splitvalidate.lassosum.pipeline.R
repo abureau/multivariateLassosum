@@ -86,9 +86,10 @@ splitvalidate.lassosum.pipeline <- function(ls.pipeline, test.bfile=NULL,
     # best.validation.result <- c(best.validation.result, v$best.validation.result)
   }
   S <- v$s; L <- v$lambda
+  len.trait <- length(ls.pipeline$sumstats)
   for(s in 1:2) {
     best.lambda.s <- which(L == best.lambda[s])
-    best.lambda.s <- c((best.lambda.s*2)-1, best.lambda.s*2)
+    best.lambda.s <- seq(from = (best.lambda.s*len.trait)-(len.trait-1), to =best.lambda.s*len.trait)
     best.pgs[split == 3-s,] <- scale(PGS[[3-s]][[which(S == best.s[s])]][,best.lambda.s])
   }
 
