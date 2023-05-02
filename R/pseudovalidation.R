@@ -25,12 +25,10 @@
 pseudovalidation <- function(bfile, beta, cor, sd=NULL, 
                              keep=NULL, extract=NULL, exclude=NULL, remove=NULL, 
                              chr=NULL, cluster=NULL, destandardize = T, ...) {
-
   stopifnot(is.numeric(cor))
   stopifnot(!any(is.na(cor)))
   if(any(abs(cor) > 1)) warning("Some abs(cor) > 1")
   if(any(abs(cor) == 1)) warning("Some abs(cor) == 1")
-
   #beta <- as.matrix(beta)
   stopifnot(!any(is.na(beta)))
   if(any(dim(cor) != dim(beta)[c(1,3)])) stop("Dimensions of cor do not correspond in beta")
@@ -39,47 +37,42 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   nbr_snp <- dim(beta)[1]
   
   parsed <- parseselect(bfile, keep=keep, extract=extract, exclude = exclude, remove=remove, chr=chr)
-  if(nbr_snp != parsed$p) stop("The number of rows in beta does not match number of selected columns in bfile")
-    
-  if(destandardize){
-    if(is.null(sd)){
-      sd <- sd.bfile(bfile = bfile, keep=parsed$keep, extract=parsed$extract, ...)
-    }
-    if(length(sd) != nrow(cor)) stop("Length of sd does not match number of rows in cor")
-    weight <- 1/sd
-    weight[!is.finite(weight)] <- 0
-    beta <- array(apply(beta, 3,
-                        function(x) as.matrix(Matrix::Diagonal(x = weight) %*% x)),
-                  c(nbr_snp,nbr_param,nbr_trait))
-  }
-
+  if(nbr_snp != parsed$p) stop("The number of rows in beta does not match number of selected columns in bfile")  
+  
   BETA <- as.vector(t(beta[,1,]))
   r_hat <- as.vector(t(cor))
   BETA <- data.frame(BETA)
   if(nbr_param == 1){
-      warning("Data for only one parameter is found")
+    warning("Data for only one parameter is found")
   }else{
-      for(param in 2:nbr_param){
-          BETA_param <- as.vector(t(beta[,param,]))
-          BETA_param <- data.frame(BETA_param)
-          BETA <- cbind(BETA, BETA_param)
-      }
+    for(param in 2:nbr_param){
+      BETA_param <- as.vector(t(beta[,param,]))
+      BETA_param <- data.frame(BETA_param)
+      BETA <- cbind(BETA, BETA_param)
+    }
   }
-  BETA <- as.matrix(BETA)
-  
   PRS <- array(rep(NA, parsed$n*nbr_param*nbr_trait),
                dim = c(parsed$n, nbr_param, nbr_trait))
   for(trait in 1:nbr_trait){
+    if(destandardize){
+      if(is.null(sd)) sd <- sd.bfile(bfile = bfile, keep=parsed$keep, extract=parsed$extract, ...)
+      if(length(sd) != nrow(cor)) stop("Length of sd does not match number of rows in cor")
+      weight <- 1/sd
+      weight[!is.finite(weight)] <- 0
+      scaled_beta <- as.matrix(Diagonal(x = weight) %*% beta[,,trait])
+      PRS[,,trait] <- pgs(bfile, keep=keep, weights = scaled_beta)
+    }else{
       PRS[,,trait] <- pgs(bfile, keep=keep, weights = beta[,,trait])
+    }
   }
   
   PRED <- matrix(data = NA,nrow = nbr_trait*parsed$n, ncol = nbr_param)
   for(param in 1:nbr_param){
-      PRED[,param] <- as.vector(t(PRS[,param,]))
+    PRED[,param] <- as.vector(t(PRS[,param,]))
   }
   pred2 <- scale(PRED, scale=F)
   bXXb <- colSums(pred2^2) / parsed$n
-  bXy <- r_hat %*% BETA 
+  bXy <- r_hat %*% as.matrix(BETA) 
   
   result <- as.vector(bXy / sqrt(bXXb))
   attr(result, "bXXb") <- bXXb
@@ -87,5 +80,5 @@ pseudovalidation <- function(bfile, beta, cor, sd=NULL,
   
   return(result)
   #' @return the results of the pseudovalidation, i.e. \eqn{f(\lambda)}
-    
+  
 }
