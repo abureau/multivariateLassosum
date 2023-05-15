@@ -240,13 +240,17 @@ sumstatsvalidate.lassosum.pipeline <- function(ls.pipeline, cor, test.bfile=NULL
   for(trait in 1:len.trait){
     beta.array[,,trait] <- BETA[,seq(from = trait, to = (len.param*2), by = 2)]
   }
+  
+  #We do not wish to destandardize twice. 
+  #If it was not done yet, we wish to do it in pseudovalidation to compute bXy.
+  if(destandardize){destandardize <- FALSE}else{destandardize <- TRUE}
   if(trace) cat("Performing pseudovalidation ...\n")
   pv <- pseudovalidation(test.bfile, 
                          beta=beta.array, 
                          cor=cor.frame, 
                          extract=toextract, 
                          keep=keep, remove=remove,
-                         destandardize = FALSE,
+                         destandardize,
                          sd=NULL, 
                          cluster=cluster, ...)
   
