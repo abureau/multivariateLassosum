@@ -3,7 +3,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
                               A1=NULL, A2=NULL,
                               ref.bfile=NULL, test.bfile=NULL,
                               LDblocks=NULL,
-                              lambda=exp(seq(log(0.001), log(0.1), length.out=20)),
+                              lambda=exp(seq(log(0.001), log(1000), length.out=20)),
                               s=c(0.2, 0.5, 0.9, 1),
                               destandardize=F,
                               weights=NULL,
