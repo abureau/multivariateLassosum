@@ -46,7 +46,7 @@
 
 
 lassosum <- function(cor,inv_Sb, inv_Ss,bfile,
-                     lambda=exp(seq(log(0.001), log(0.1), length.out=20)),
+                     lambda=exp(seq(log(0.001), log(1000), length.out=20)),
                      shrink=0.9,weights=NULL,
                      thr=1e-4, init=NULL, trace=0, maxiter=10000,
                      blocks=NULL,
