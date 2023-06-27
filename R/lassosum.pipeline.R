@@ -22,7 +22,9 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   #'            derived from summary statistics. Note : the order of phenotypes is important when
   #'            the user gives cor, chr, etc . The elements of cor, chr, etc. corresponding to the 
   #'            same phenotype should have the same length. Can be NULL for no phenotype.  
-  #' @param phenotypic.genetic.Var.Cov.matrix : genetic covariance matrix of the phenotypes ( should be semi positive definite)
+  #' @param phenotypic.genetic.Var.Cov.matrix : genetic covariance matrix of the phenotypes (should be semi positive definite).
+  #' If a single matrix is given, the function will generate one matrix by snp after coordinating the summary statistics with the test and reference panel.
+  #' If multiple matrices are given, the function expects to find as many as there are SNPs remaining after the summary statistics coordination step. They should all be semi positive definite. 
   #' @param Var.phenotypic : vector of phenotypic variances ( can be set to 1 if genetic variances are specified as heritabilities) 
   #' @param chr  A list, each element is for a phenotype. Together with \code{pos}, chromosome and position for \code{cor}
   #' @param pos  A list, each element is for a phenotype. Together with \code{chr}, chromosome and position for \code{cor}
@@ -215,12 +217,11 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
   stopifnot("Dimension of phenotypic.genetic.Var.Cov.matrix does not equal the number of phenotypes"=dm[1]==length(Var.phenotypic))
   
   # On teste si la matrice est semi d?finie positive
-  if (length(dm)==3)
-  {
+  if (length(dm)==3) {
     psd = all(apply(phenotypic.genetic.Var.Cov.matrix,3,matrixcalc::is.positive.semi.definite))
-  }
-  else # length(dm)==2
+  } else {# length(dm)==2
     psd = matrixcalc::is.positive.semi.definite(phenotypic.genetic.Var.Cov.matrix, tol = 1e-8)
+  }
   stopifnot("At least one phenotypic.genetic.Var.Cov.matrix is negative definite"=psd) 
   
   possible.LDblocks <- c("EUR.hg19", "AFR.hg19", "ASN.hg19",
@@ -230,7 +231,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
       if(LDblocks %in% possible.LDblocks) {
         LDblocks <- read.table2(system.file(paste0("data/Berisa.",
                                                    LDblocks, ".bed"),
-                                            package="lassosum"), header=T)
+                                            package="multivariateLassosum"), header=T)
       } else {
         stop(paste("I cannot recognize this LDblock. Specify one of",
                    paste(possible.LDblocks, collapse=", ")))
@@ -357,7 +358,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     if(!onefile) {
         test.bim <- read.table2(paste0(test.bfile, ".bim"))
         test.bim$V1 <- as.character(sub("^chr", "", test.bim$V1, ignore.case = T))
-    } else test.bim <- ref.bim
+    } else {test.bim <- ref.bim}
 
     if(is.null(ref.bfile) && trace > 0) cat("Reference panel assumed the same as test data.")
 
@@ -434,13 +435,10 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
     # 2 jeux ( summary statistics et jeu de test)
 
     nbr_SNPs <- nrow(ss3.1.commun)
-    if (length(dm)==3)
-    {
+    if (length(dm)==3){
       if (nbr_SNPs != dm[3]) stop("Number of SNP specific genetic covariance matrices does not equal the number of SNPs in common to all traits")
       inv_Sb = array(apply(phenotypic.genetic.Var.Cov.matrix,3,function(mat) chol2inv(chol(mat))),c(dm[1],dm[2],nbr_SNPs))
-    }
-    else # length(dm)==2, on copie la même matrice nbr_SNPs fois
-    {
+    } else {# length(dm)==2, on copie la même matrice nbr_SNPs fois
       Sigma_b <- phenotypic.genetic.Var.Cov.matrix/nbr_SNPs
       inv_Sb <- array(Rfast::spdinv(Sigma_b),c(dm[1],dm[2],nbr_SNPs))
     }
