@@ -526,7 +526,7 @@ lassosum.pipeline <- function(cor, phenotypic.genetic.Var.Cov.matrix,Var.phenoty
      # J'ai adapt? la fonction indeplasso au cas multivariate
      #Adapt?s aux poids - indeplasso - OK!
      #Adapt?s aux poids - runElnet_s1 - NON!
-       il <- indeplasso(cor = cor3,inv_Sb3,inv_Ss,lambda,sample_size, weigths = w3)
+       il <- indeplasso(cor = cor3,inv_Sb3,inv_Ss,lambda,sample_size, weights = w3)
    } else {
        il <- list(beta=matrix(0, nrow=length(m.test$order), ncol=length(cor)*length(lambda)))
    }
